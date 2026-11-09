@@ -1,16 +1,36 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_MODEL, MODEL_OPTIONS, type ModelSize } from '../ai/models';
+import { CHICAGO, loadChicago } from '../chicago';
+import type { BuildingInfo } from '../chicago/kit';
 import { getSample, inArtifact, type SampleFn } from '../host';
 import { buildMinutes, colorsUsed } from '../lego/inventory';
 import type { Model } from '../lego/types';
 import { realSizeCm, StepRenderer } from '../render/pageRenderer';
 import { loadSample, SAMPLES } from '../samples';
 import { BuildPlayer } from './BuildPlayer';
+import { Catalog } from './Catalog';
 import { InstructionBook, mainStepCount } from './Instructions';
 import { Studs } from './PartCallout';
 import { PartsList } from './PartsList';
+import { useThumb } from './thumbs';
 
 type Tab = 'build' | 'instructions' | 'parts';
+type Collection = 'samples' | 'chicago';
+interface Route {
+  view: 'catalog' | 'model';
+  collection: Collection;
+  id: string;
+}
+
+/** #chicago → catalog, #chicago/<id> → a Chicago model, #<sample-id> → a starter build. */
+function parseHash(): Route {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h === 'chicago') return { view: 'catalog', collection: 'chicago', id: CHICAGO[0].id };
+  if (h.startsWith('chicago/') && CHICAGO.some((c) => c.id === h.slice(8))) return { view: 'model', collection: 'chicago', id: h.slice(8) };
+  if (SAMPLES.some((x) => x.id === h)) return { view: 'model', collection: 'samples', id: h };
+  return { view: 'model', collection: 'samples', id: 'freighter' };
+}
+const hashOf = (r: Route) => (r.view === 'catalog' ? '#chicago' : r.collection === 'chicago' ? `#chicago/${r.id}` : `#${r.id}`);
 
 const KEY_STORE = 'legoit.apiKey';
 const MODEL_STORE = 'legoit.model';
@@ -67,8 +87,80 @@ function BrickLogo() {
   );
 }
 
+function ChicagoShelfCard({ id, active, onClick }: { id: string; active: boolean; onClick: () => void }) {
+  const src = CHICAGO.find((c) => c.id === id)!;
+  const img = useThumb(id, () => loadChicago(id)!);
+  return (
+    <button className={`card ${active ? 'active' : ''}`} onClick={onClick}>
+      <span className="card-thumb">{img ? <img src={img.url} alt="" style={{ maxWidth: 150, maxHeight: 100 }} /> : null}</span>
+      <div className="card-body">
+        <div className="card-name">{src.name}</div>
+        <div className="card-meta">
+          <span>{src.info.year}</span> <span>{src.info.height.split(' ·')[0]}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function Facts({ info }: { info: BuildingInfo }) {
+  return (
+    <section className="facts" aria-label="About the building">
+      <dl>
+        <div>
+          <dt>Completed</dt>
+          <dd>{info.year}</dd>
+        </div>
+        <div>
+          <dt>Architect</dt>
+          <dd>{info.architect}</dd>
+        </div>
+        <div>
+          <dt>Height</dt>
+          <dd>{info.height}</dd>
+        </div>
+        {info.floors ? (
+          <div>
+            <dt>Floors</dt>
+            <dd>{info.floors}</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt>Style</dt>
+          <dd>{info.style}</dd>
+        </div>
+        <div>
+          <dt>Location</dt>
+          <dd>{info.location}</dd>
+        </div>
+        <div>
+          <dt>Model scale</dt>
+          <dd>{info.scale}</dd>
+        </div>
+      </dl>
+      <p>{info.fact}</p>
+    </section>
+  );
+}
+
 export function App() {
-  const [modelId, setModelId] = useState<string>('freighter');
+  const [route, setRoute] = useState<Route>(parseHash);
+  const modelId = route.id;
+  const go = (r: Route) => {
+    setRoute(r);
+    if (location.hash !== hashOf(r)) history.pushState(null, '', hashOf(r));
+    if (r.view !== route.view || r.id !== route.id) window.scrollTo({ top: 0 });
+  };
+  const setModelId = (id: string) => go({ view: 'model', collection: CHICAGO.some((c) => c.id === id) ? 'chicago' : 'samples', id });
+  useEffect(() => {
+    const on = () => setRoute(parseHash());
+    window.addEventListener('popstate', on);
+    window.addEventListener('hashchange', on);
+    return () => {
+      window.removeEventListener('popstate', on);
+      window.removeEventListener('hashchange', on);
+    };
+  }, []);
   const [generated, setGenerated] = useState<Model[]>([]);
   const [tab, setTab] = useState<Tab>('build');
   const [prompt, setPrompt] = useState('');
@@ -92,7 +184,8 @@ export function App() {
     });
   }, []);
 
-  const model = useMemo(() => generated.find((g) => g.id === modelId) ?? loadSample(modelId), [modelId, generated]);
+  const model = useMemo(() => generated.find((g) => g.id === modelId) ?? loadChicago(modelId) ?? loadSample(modelId), [modelId, generated]);
+  const chicagoInfo = CHICAGO.find((c) => c.id === modelId)?.info;
   const samples = useMemo(() => SAMPLES.map((s) => loadSample(s.id)), []);
   const stats = useMemo(() => {
     const cm = realSizeCm(model);
@@ -100,8 +193,8 @@ export function App() {
   }, [model]);
 
   useEffect(() => {
-    document.title = `${model.name} · Lego It`;
-  }, [model]);
+    document.title = route.view === 'catalog' ? 'Chicago Buildings · Lego It' : `${model.name} · Lego It`;
+  }, [model, route.view]);
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -173,6 +266,14 @@ export function App() {
           <BrickLogo />
           <span>Lego&nbsp;It</span>
         </div>
+        <nav className="topnav" aria-label="Collections">
+          <button className={route.collection === 'samples' && route.view === 'model' ? 'on' : ''} onClick={() => go({ view: 'model', collection: 'samples', id: SAMPLES.some((x) => x.id === modelId) ? modelId : 'freighter' })}>
+            Starter builds
+          </button>
+          <button className={route.collection === 'chicago' ? 'on' : ''} onClick={() => go({ view: 'catalog', collection: 'chicago', id: modelId })}>
+            Chicago
+          </button>
+        </nav>
         <form className="prompt" onSubmit={submit}>
           <input
             value={prompt}
@@ -203,6 +304,22 @@ export function App() {
         </div>
       )}
 
+      {route.view === 'catalog' ? (
+        <Catalog onOpen={(id) => go({ view: 'model', collection: 'chicago', id })} />
+      ) : (
+        <>
+      {route.collection === 'chicago' ? (
+        <section className="shelf" aria-label="Chicago buildings">
+          <button className="card card-back" onClick={() => go({ view: 'catalog', collection: 'chicago', id: modelId })}>
+            <span className="card-back-arrow">←</span>
+            <span className="card-name">All 20 buildings</span>
+            <span className="card-meta">Chicago catalog</span>
+          </button>
+          {CHICAGO.map((c) => (
+            <ChicagoShelfCard key={c.id} id={c.id} active={c.id === modelId} onClick={() => setModelId(c.id)} />
+          ))}
+        </section>
+      ) : (
       <section className="shelf" aria-label="Models">
         {[...generated, ...samples].map((m) => (
           <button key={m.id} className={`card ${m.id === modelId ? 'active' : ''}`} onClick={() => setModelId(m.id)}>
@@ -217,6 +334,7 @@ export function App() {
           </button>
         ))}
       </section>
+      )}
 
       <main className="workspace">
         <div className="model-head">
@@ -255,6 +373,7 @@ export function App() {
             </div>
           </dl>
         </div>
+        {chicagoInfo && <Facts info={chicagoInfo} />}
         <nav className="tabs" role="tablist">
           {(
             [
@@ -274,6 +393,8 @@ export function App() {
           {tab === 'parts' && <PartsList model={model} />}
         </div>
       </main>
+        </>
+      )}
 
       <footer className="foot">
         Lego It is a fan-made tool. LEGO® is a trademark of the LEGO Group, which does not sponsor, authorize or endorse this site. Part numbers and

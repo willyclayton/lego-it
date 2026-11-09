@@ -6,6 +6,7 @@ import type { Model } from '../lego/types';
 import { partImage, StepRenderer } from '../render/pageRenderer';
 import { canPrint } from '../host';
 import { BagIcon, PartCallout, RotateIcon } from './PartCallout';
+import { enqueue, pendingRenders } from './renderQueue';
 
 export const PAGE_W = 1120;
 export const PAGE_H = 792;
@@ -15,25 +16,6 @@ type Page =
   | { kind: 'steps'; steps: number[]; cap: number; sub?: string; bag: number; bagStart: boolean; wide?: boolean }
   | { kind: 'final' }
   | { kind: 'inventory'; items: InvItem[]; index: number; of: number };
-
-/* ------------------------------ render queue ------------------------------ */
-
-const queue: (() => void)[] = [];
-let pumping = false;
-function enqueue(job: () => void) {
-  queue.push(job);
-  if (!pumping) pump();
-}
-function pump() {
-  pumping = true;
-  requestAnimationFrame(() => {
-    const t0 = performance.now();
-    while (queue.length && performance.now() - t0 < 30) queue.shift()!();
-    if (queue.length) pump();
-    else pumping = false;
-  });
-}
-export const pendingRenders = () => queue.length;
 
 /* ------------------------------ pagination ------------------------------ */
 

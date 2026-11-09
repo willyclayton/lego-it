@@ -220,6 +220,23 @@ export class StepRenderer {
     return url;
   }
 
+  /** The finished model framed tightly, at most maxW x maxH CSS px (for catalog cards and the skyline). */
+  heroTight(maxW: number, maxH: number, style: RenderStyle = 'instructions', az = this.model.heroView ?? 35, el = 24): PartImage {
+    const m = this.mesh;
+    m.setAll(0);
+    m.setStyle(style, true);
+    const o = offscreen();
+    const dir = dirFromAngles(az, el);
+    fitOrtho(o.camera, this.finalBox, dir, 1, 1.04);
+    const asp = projectedAspect(o.camera, this.finalBox);
+    fitOrtho(o.camera, this.finalBox, dir, asp, 1.04);
+    const k = Math.min(maxW / asp, maxH);
+    const w = Math.round(k * asp), h = Math.round(k);
+    const url = o.draw(m.group, w * 2, h * 2, style);
+    m.setStyle('instructions');
+    return { url, w, h };
+  }
+
   dispose() {
     this.mesh.dispose();
   }
