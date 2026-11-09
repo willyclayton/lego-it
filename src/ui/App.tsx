@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_MODEL, MODEL_OPTIONS, type ModelSize } from '../ai/models';
-import { CHICAGO, loadChicago } from '../chicago';
-import type { BuildingInfo } from '../chicago/kit';
+import { CHICAGO } from '../chicago';
 import { getSample, inArtifact, type SampleFn } from '../host';
 import { buildMinutes, colorsUsed } from '../lego/inventory';
 import type { Model } from '../lego/types';
@@ -9,10 +8,10 @@ import { realSizeCm, StepRenderer } from '../render/pageRenderer';
 import { loadSample, SAMPLES } from '../samples';
 import { BuildPlayer } from './BuildPlayer';
 import { Catalog } from './Catalog';
+import { ChicagoBuild } from './ChicagoBuild';
 import { InstructionBook, mainStepCount } from './Instructions';
 import { Studs } from './PartCallout';
 import { PartsList } from './PartsList';
-import { useThumb } from './thumbs';
 
 type Tab = 'build' | 'instructions' | 'parts';
 type Collection = 'samples' | 'chicago';
@@ -22,15 +21,18 @@ interface Route {
   id: string;
 }
 
-/** #chicago → catalog, #chicago/<id> → a Chicago model, #<sample-id> → a starter build. */
+const CATALOG: Route = { view: 'catalog', collection: 'chicago', id: '' };
+
+/** (no hash) or #chicago → the catalog, #chicago/<id> → build a Chicago landmark, #starter/<id> → a starter build. */
 function parseHash(): Route {
   const h = decodeURIComponent(location.hash.slice(1));
-  if (h === 'chicago') return { view: 'catalog', collection: 'chicago', id: CHICAGO[0].id };
   if (h.startsWith('chicago/') && CHICAGO.some((c) => c.id === h.slice(8))) return { view: 'model', collection: 'chicago', id: h.slice(8) };
-  if (SAMPLES.some((x) => x.id === h)) return { view: 'model', collection: 'samples', id: h };
-  return { view: 'model', collection: 'samples', id: 'freighter' };
+  const sample = h.startsWith('starter/') ? h.slice(8) : h; // older links used #<sample-id>
+  if (SAMPLES.some((x) => x.id === sample)) return { view: 'model', collection: 'samples', id: sample };
+  if (h === 'starter') return { view: 'model', collection: 'samples', id: 'freighter' };
+  return CATALOG;
 }
-const hashOf = (r: Route) => (r.view === 'catalog' ? '#chicago' : r.collection === 'chicago' ? `#chicago/${r.id}` : `#${r.id}`);
+const hashOf = (r: Route) => (r.view === 'catalog' ? '#chicago' : r.collection === 'chicago' ? `#chicago/${r.id}` : `#starter/${r.id}`);
 
 const KEY_STORE = 'legoit.apiKey';
 const MODEL_STORE = 'legoit.model';
@@ -87,62 +89,6 @@ function BrickLogo() {
   );
 }
 
-function ChicagoShelfCard({ id, active, onClick }: { id: string; active: boolean; onClick: () => void }) {
-  const src = CHICAGO.find((c) => c.id === id)!;
-  const img = useThumb(id, () => loadChicago(id)!);
-  return (
-    <button className={`card ${active ? 'active' : ''}`} onClick={onClick}>
-      <span className="card-thumb">{img ? <img src={img.url} alt="" style={{ maxWidth: 150, maxHeight: 100 }} /> : null}</span>
-      <div className="card-body">
-        <div className="card-name">{src.name}</div>
-        <div className="card-meta">
-          <span>{src.info.year}</span> <span>{src.info.height.split(' ·')[0]}</span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function Facts({ info }: { info: BuildingInfo }) {
-  return (
-    <section className="facts" aria-label="About the building">
-      <dl>
-        <div>
-          <dt>Completed</dt>
-          <dd>{info.year}</dd>
-        </div>
-        <div>
-          <dt>Architect</dt>
-          <dd>{info.architect}</dd>
-        </div>
-        <div>
-          <dt>Height</dt>
-          <dd>{info.height}</dd>
-        </div>
-        {info.floors ? (
-          <div>
-            <dt>Floors</dt>
-            <dd>{info.floors}</dd>
-          </div>
-        ) : null}
-        <div>
-          <dt>Style</dt>
-          <dd>{info.style}</dd>
-        </div>
-        <div>
-          <dt>Location</dt>
-          <dd>{info.location}</dd>
-        </div>
-        <div>
-          <dt>Model scale</dt>
-          <dd>{info.scale}</dd>
-        </div>
-      </dl>
-      <p>{info.fact}</p>
-    </section>
-  );
-}
-
 export function App() {
   const [route, setRoute] = useState<Route>(parseHash);
   const modelId = route.id;
@@ -184,17 +130,22 @@ export function App() {
     });
   }, []);
 
-  const model = useMemo(() => generated.find((g) => g.id === modelId) ?? loadChicago(modelId) ?? loadSample(modelId), [modelId, generated]);
-  const chicagoInfo = CHICAGO.find((c) => c.id === modelId)?.info;
-  const samples = useMemo(() => SAMPLES.map((s) => loadSample(s.id)), []);
+  const starterView = route.view === 'model' && route.collection === 'samples';
+  const model = useMemo(
+    () => (starterView ? (generated.find((g) => g.id === modelId) ?? loadSample(modelId)) : null),
+    [starterView, modelId, generated],
+  );
+  const samples = useMemo(() => (starterView ? SAMPLES.map((s) => loadSample(s.id)) : []), [starterView]);
   const stats = useMemo(() => {
+    if (!model) return null;
     const cm = realSizeCm(model);
     return { cm, minutes: buildMinutes(model), colors: colorsUsed(model).length, steps: mainStepCount(model) };
   }, [model]);
 
   useEffect(() => {
-    document.title = route.view === 'catalog' ? 'Chicago Buildings · Lego It' : `${model.name} · Lego It`;
-  }, [model, route.view]);
+    const name = model?.name ?? CHICAGO.find((c) => c.id === modelId)?.name;
+    document.title = route.view === 'catalog' || !name ? 'Chicago Buildings · Lego It' : `${name} · Lego It`;
+  }, [model, modelId, route.view]);
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -243,7 +194,7 @@ export function App() {
         ({ model: m } = await generateModel({ apiKey, prompt: p, size, model: aiModel, signal: ctrl.signal, onProgress: setBusy }));
       }
       setGenerated((g) => [m, ...g]);
-      setModelId(m.id);
+      go({ view: 'model', collection: 'samples', id: m.id });
       setTab('build');
     } catch (err) {
       if (!ctrl.signal.aborted) setNotice(err instanceof Error ? err.message : String(err));
@@ -262,16 +213,16 @@ export function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="logo">
+        <button className="logo" onClick={() => go(CATALOG)} aria-label="Lego It, back to the catalog">
           <BrickLogo />
           <span>Lego&nbsp;It</span>
-        </div>
+        </button>
         <nav className="topnav" aria-label="Collections">
-          <button className={route.collection === 'samples' && route.view === 'model' ? 'on' : ''} onClick={() => go({ view: 'model', collection: 'samples', id: SAMPLES.some((x) => x.id === modelId) ? modelId : 'freighter' })}>
-            Starter builds
+          <button className={route.collection === 'chicago' ? 'on' : ''} onClick={() => go(CATALOG)}>
+            Chicago catalog
           </button>
-          <button className={route.collection === 'chicago' ? 'on' : ''} onClick={() => go({ view: 'catalog', collection: 'chicago', id: modelId })}>
-            Chicago
+          <button className={starterView ? 'on' : ''} onClick={() => go({ view: 'model', collection: 'samples', id: SAMPLES.some((x) => x.id === modelId) ? modelId : 'freighter' })}>
+            Starter builds
           </button>
         </nav>
         <form className="prompt" onSubmit={submit}>
@@ -306,21 +257,11 @@ export function App() {
 
       {route.view === 'catalog' ? (
         <Catalog onOpen={(id) => go({ view: 'model', collection: 'chicago', id })} />
-      ) : (
+      ) : route.collection === 'chicago' ? (
+        <ChicagoBuild key={modelId} id={modelId} onBack={() => go(CATALOG)} onOpen={(id) => go({ view: 'model', collection: 'chicago', id })} />
+      ) : model && stats ? (
         <>
-      {route.collection === 'chicago' ? (
-        <section className="shelf" aria-label="Chicago buildings">
-          <button className="card card-back" onClick={() => go({ view: 'catalog', collection: 'chicago', id: modelId })}>
-            <span className="card-back-arrow">←</span>
-            <span className="card-name">All {CHICAGO.length} landmarks</span>
-            <span className="card-meta">Chicago catalog</span>
-          </button>
-          {CHICAGO.map((c) => (
-            <ChicagoShelfCard key={c.id} id={c.id} active={c.id === modelId} onClick={() => setModelId(c.id)} />
-          ))}
-        </section>
-      ) : (
-      <section className="shelf" aria-label="Models">
+      <section className="shelf" aria-label="Starter builds">
         {[...generated, ...samples].map((m) => (
           <button key={m.id} className={`card ${m.id === modelId ? 'active' : ''}`} onClick={() => setModelId(m.id)}>
             <img src={thumbnail(m)} alt="" width={150} height={100} />
@@ -334,7 +275,6 @@ export function App() {
           </button>
         ))}
       </section>
-      )}
 
       <main className="workspace">
         <div className="model-head">
@@ -373,7 +313,6 @@ export function App() {
             </div>
           </dl>
         </div>
-        {chicagoInfo && <Facts info={chicagoInfo} />}
         <nav className="tabs" role="tablist">
           {(
             [
@@ -394,7 +333,7 @@ export function App() {
         </div>
       </main>
         </>
-      )}
+      ) : null}
 
       <footer className="foot">
         Lego It is a fan-made tool. LEGO® is a trademark of the LEGO Group, which does not sponsor, authorize or endorse this site. Part numbers and

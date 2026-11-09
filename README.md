@@ -17,7 +17,9 @@ Each model also shows piece count, step count, age, difficulty, estimated build 
 
 ## Chicago Buildings catalog
 
-21 Chicago landmarks as detailed display models, each on a black base with a nameplate, with the real story behind the building (year, architect, height, floors, style, location, a fact) and its model scale. The catalog page opens with a skyline of all of them drawn to real height. Link straight to it with `#chicago`, or to a building with `#chicago/willis-tower`.
+The site opens on the catalog: 21 Chicago landmarks as detailed display models, each on a black base with a nameplate, with the real story behind the building (year, architect, height, floors, style, location, a fact) and its model scale. A skyline of all of them, drawn to real height, sits above the grid; filter by era or sort by height, age or name. Pick a building and its page starts building it right away, with previous/next to move through the collection and Esc or "All buildings" to go back. Links: `#chicago/willis-tower` opens a building, `#starter/freighter` a starter build.
+
+Catalog pictures are pre-rendered into `public/thumbs/` so the landing page appears instantly. After changing a model, run `npm run dev`, then `npm run thumbs` to refresh them (the app renders live if a picture is missing).
 
 ![Chicago Buildings catalog](docs/screenshots/chicago-catalog.png)
 
