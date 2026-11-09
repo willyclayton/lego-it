@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "build:artifact": "npm run build && node scripts/artifact.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
+    "fflate": "^0.8.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "^0.187.0"

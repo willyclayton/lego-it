@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { download } from '../lego/export';
+import { saveFile } from '../host';
 import { stepParts } from '../lego/inventory';
 import { color } from '../lego/colors';
 import { part } from '../lego/parts';
@@ -249,7 +249,7 @@ export function BuildPlayer({ model, autoplay = true }: { model: Model; autoplay
             const e = engine.current;
             if (!e) return;
             if (e.recording) e.stopRecording();
-            else e.record((blob, ext) => download(`${model.name.replace(/\s+/g, '-').toLowerCase()}-build.${ext}`, blob));
+            else e.record((blob, ext) => void saveFile(`${model.name.replace(/\s+/g, '-').toLowerCase()}-build.${ext}`, blob));
           }}
         >
           {recording ? '■ Stop' : '⬤ Video'}

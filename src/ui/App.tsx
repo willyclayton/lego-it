@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_MODEL, MODEL_OPTIONS, type ModelSize } from '../ai/models';
+import { getSample, inArtifact, type SampleFn } from '../host';
 import { buildMinutes, colorsUsed } from '../lego/inventory';
 import type { Model } from '../lego/types';
 import { realSizeCm, StepRenderer } from '../render/pageRenderer';
@@ -79,6 +80,17 @@ export function App() {
   const [remember, setRemember] = useState(() => !!readStore(KEY_STORE));
   const [aiModel, setAiModel] = useState(() => readStore(MODEL_STORE) || DEFAULT_MODEL);
   const abort = useRef<AbortController | null>(null);
+  // How "Build anything" reaches Claude: the viewer's own account when hosted on
+  // claude.ai, otherwise a user-supplied API key.
+  const hosted = useRef<SampleFn | null>(null);
+  const [aiMode, setAiMode] = useState<'checking' | 'hosted' | 'key' | 'none'>(inArtifact ? 'checking' : 'key');
+  useEffect(() => {
+    if (!inArtifact) return;
+    void getSample().then((sm) => {
+      hosted.current = sm;
+      setAiMode(sm ? 'hosted' : 'none');
+    });
+  }, []);
 
   const model = useMemo(() => generated.find((g) => g.id === modelId) ?? loadSample(modelId), [modelId, generated]);
   const samples = useMemo(() => SAMPLES.map((s) => loadSample(s.id)), []);
@@ -96,7 +108,25 @@ export function App() {
     const p = prompt.trim();
     if (!p || busy) return;
     setNotice(null);
-    if (!apiKey) {
+    let mode = aiMode;
+    if (mode === 'checking') {
+      setBusy('Connecting to Claude…');
+      hosted.current = await getSample();
+      mode = hosted.current ? 'hosted' : 'none';
+      setAiMode(mode);
+      setBusy(null);
+    }
+    if (mode === 'none') {
+      const id = matchSample(p);
+      if (id) setModelId(id);
+      setNotice(
+        id
+          ? `Showing the built-in “${SAMPLES.find((x) => x.id === id)!.name}”. Designing new models needs Claude, which isn’t available to this page right now.`
+          : 'Designing new models needs Claude, which isn’t available to this page right now. Try one of the samples below.',
+      );
+      return;
+    }
+    if (mode === 'key' && !apiKey) {
       const id = matchSample(p);
       if (id) {
         setModelId(id);
@@ -111,8 +141,14 @@ export function App() {
     abort.current = ctrl;
     setBusy('Starting…');
     try {
-      const { generateModel } = await import('../ai/generate');
-      const { model: m } = await generateModel({ apiKey, prompt: p, size, model: aiModel, signal: ctrl.signal, onProgress: setBusy });
+      let m: Model;
+      if (mode === 'hosted' && hosted.current) {
+        const { generateHosted } = await import('../ai/hosted');
+        ({ model: m } = await generateHosted(hosted.current, { prompt: p, size, signal: ctrl.signal, onProgress: setBusy }));
+      } else {
+        const { generateModel } = await import('../ai/generate');
+        ({ model: m } = await generateModel({ apiKey, prompt: p, size, model: aiModel, signal: ctrl.signal, onProgress: setBusy }));
+      }
       setGenerated((g) => [m, ...g]);
       setModelId(m.id);
       setTab('build');
@@ -269,6 +305,21 @@ export function App() {
               The samples work offline. To turn any idea into a model, Lego It asks Claude to sketch it as 3D shapes, then converts those into real bricks and
               instructions right here in your browser.
             </p>
+            {inArtifact ? (
+              <>
+                <p>
+                  {aiMode === 'none'
+                    ? 'Claude isn’t available to this page in your account right now, so only the built-in samples can be shown.'
+                    : 'On this page, designs run on your own Claude account. The first time you build, you’ll be asked to allow Lego It to use Claude. There’s nothing to set up.'}
+                </p>
+                <div className="modal-actions">
+                  <button className="primary" onClick={() => setSettings(false)}>
+                    Got it
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
             <label className="field">
               <span>Claude API key</span>
               <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value.trim())} placeholder="sk-ant-…" autoComplete="off" />
@@ -307,6 +358,8 @@ export function App() {
                 Save
               </button>
             </div>
+              </>
+            )}
           </div>
         </div>
       )}

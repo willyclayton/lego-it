@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { color } from '../lego/colors';
-import { download, toBrickLinkXML, toCSV, toLDraw } from '../lego/export';
+import { toBrickLinkXML, toCSV, toLDraw } from '../lego/export';
+import { inArtifact, saveFile } from '../host';
 import { colorsUsed, inventory, sortParts, type InvItem } from '../lego/inventory';
 import { part } from '../lego/parts';
 import type { Model } from '../lego/types';
@@ -23,6 +24,11 @@ export function PartsList({ model }: { model: Model }) {
   }, [items, groupBy]);
   const colors = useMemo(() => colorsUsed(model), [model]);
   const slug = model.name.replace(/\s+/g, '-').toLowerCase();
+  const [status, setStatus] = useState<string | null>(null);
+  const save = async (name: string, data: string) => {
+    const r = await saveFile(name, data);
+    setStatus(r === 'unavailable' ? 'Saving files isn’t available here.' : r === 'declined' ? null : inArtifact && /\.(ldr|xml)$/.test(name) ? `Saved ${name} inside a .zip.` : null);
+  };
 
   return (
     <div className="parts">
@@ -46,15 +52,16 @@ export function PartsList({ model }: { model: Model }) {
               By type
             </button>
           </div>
-          <button className="chip" onClick={() => download(`${slug}.ldr`, toLDraw(model))} title="LDraw model with build steps (opens in BrickLink Studio, LeoCAD, LDView…)">
+          <button className="chip" onClick={() => save(`${slug}.ldr`, toLDraw(model))} title="LDraw model with build steps (opens in BrickLink Studio, LeoCAD, LDView…)">
             ⬇ LDraw .ldr
           </button>
-          <button className="chip" onClick={() => download(`${slug}-bricklink.xml`, toBrickLinkXML(model), 'text/xml')} title="Upload as a BrickLink Wanted List">
+          <button className="chip" onClick={() => save(`${slug}-bricklink.xml`, toBrickLinkXML(model))} title="Upload as a BrickLink Wanted List">
             ⬇ BrickLink XML
           </button>
-          <button className="chip" onClick={() => download(`${slug}-parts.csv`, toCSV(model), 'text/csv')}>
+          <button className="chip" onClick={() => save(`${slug}-parts.csv`, toCSV(model))}>
             ⬇ CSV
           </button>
+          {status && <span className="muted save-status">{status}</span>}
         </div>
       </div>
       {groups.map(([name, list]) => (

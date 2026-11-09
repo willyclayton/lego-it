@@ -68,8 +68,19 @@ button:disabled {
   background: var(--yellow);
   border-bottom: 3px solid #e0b400;
   position: sticky;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   z-index: 20;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 21;
+  background: var(--yellow);
+}
+.save-status {
+  font-size: 12px;
 }
 .logo {
   display: flex;

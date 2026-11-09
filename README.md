@@ -1,5 +1,7 @@
 # Lego It
 
+**Live site:** https://claude.ai/artifact/7WmhUZ69D6618jLtwkANNa (hosted on claude.ai; private until shared from the page's Share menu)
+
 Turn anything into a brick model you can actually build, with:
 
 1. **Build animation** – the whole model assembles brick by brick in 3D: parts drop in and click into place, sub-assemblies are built on the side and flown in, and the camera follows the model as it grows. Scrub, change speed, step through, hover any brick to identify it, and record the build as a video.
@@ -30,7 +32,18 @@ npm install
 npm run dev        # http://localhost:5173
 npm run build      # static site in dist/
 npx tsx scripts/stats.ts   # piece/step stats + overlap check for every sample
+npm run build:artifact     # build + dist/artifact.html for the claude.ai-hosted page
 ```
+
+### Hosted vs. self-hosted
+
+The same build runs in both places and adapts at runtime (`src/host.ts`):
+
+| | Hosted on claude.ai | Local / any static host |
+|---|---|---|
+| Build anything | Viewer's own Claude account (asked to allow it once); no key | Your Claude API key (Settings) |
+| Exports & video | Save prompt; `.ldr` and `.xml` arrive zipped | Direct downloads |
+| Print / PDF | Not available (the host blocks printing) | Available |
 
 ## How it works
 

@@ -4,6 +4,7 @@ import { inventory, stepParts, type InvItem } from '../lego/inventory';
 import { brickAABB, stepLabels } from '../lego/steps';
 import type { Model } from '../lego/types';
 import { partImage, StepRenderer } from '../render/pageRenderer';
+import { canPrint } from '../host';
 import { BagIcon, PartCallout, RotateIcon } from './PartCallout';
 
 export const PAGE_W = 1120;
@@ -378,9 +379,11 @@ export function InstructionBook({ model }: { model: Model }) {
         <label className="toggle">
           <input type="checkbox" checked={highlight} onChange={(e) => setHighlight(e.target.checked)} /> Highlight new parts
         </label>
-        <button className="chip" onClick={() => setPrinting(true)} disabled={printing}>
-          {printing ? `Preparing ${Math.round(progress * 100)}%…` : '⎙ Print / PDF'}
-        </button>
+        {canPrint && (
+          <button className="chip" onClick={() => setPrinting(true)} disabled={printing}>
+            {printing ? `Preparing ${Math.round(progress * 100)}%…` : '⎙ Print / PDF'}
+          </button>
+        )}
       </div>
       <div className="book-stage" ref={wrap}>
         <div className="page-holder" style={{ width: PAGE_W * scale, height: PAGE_H * scale }}>
