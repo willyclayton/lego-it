@@ -19,6 +19,8 @@ Each model also shows piece count, step count, age, difficulty, estimated build 
 
 Twenty Chicago landmarks as detailed display models, each on a black base with a nameplate, with the real story behind the building (year, architect, height, floors, style, location, a fact) and its model scale. The catalog page opens with a skyline of all twenty drawn to real height. Link straight to it with `#chicago`, or to a building with `#chicago/willis-tower`.
 
+![Chicago Buildings catalog](docs/screenshots/chicago-catalog.png)
+
 | Building | Year | Pieces | What makes it recognizable |
 |---|---|---:|---|
 | Willis Tower | 1974 | 748 | Nine bundled tubes stepping back at floors 50, 66 and 90; black frame, bronze glass, twin antennas |
