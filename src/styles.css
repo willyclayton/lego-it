@@ -531,6 +531,28 @@ button:disabled {
   min-width: 96px;
 }
 
+.brick-tip {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  box-shadow: 0 2px 0 var(--ink);
+  white-space: nowrap;
+}
+.brick-tip b {
+  font-size: 13px;
+}
+.hint {
+  display: none;
+}
+
 /* ---------------- instruction book ---------------- */
 .book {
   flex: 1;
@@ -1010,10 +1032,48 @@ button:disabled {
 @media (max-width: 760px) {
   .topbar {
     flex-wrap: wrap;
+    padding: 10px 16px;
   }
   .prompt {
     order: 3;
     flex-basis: 100%;
+    flex-wrap: wrap;
+  }
+  .prompt input {
+    flex-basis: 100%;
+  }
+  .prompt select,
+  .prompt .primary {
+    flex: 1;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .shelf {
+    padding: 12px 16px 6px;
+  }
+  .workspace {
+    margin: 8px 16px 0;
+  }
+  .model-head {
+    padding: 14px 16px 8px;
+  }
+  .tabs {
+    padding: 0 8px;
+  }
+  .tabs button {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  .time {
+    display: none;
+  }
+  .scrubber {
+    flex-basis: 100%;
+    order: 10;
+  }
+  .stage-tools {
+    top: auto;
+    bottom: 12px;
   }
   .transport {
     flex-wrap: wrap;

@@ -3,6 +3,7 @@ import { COLORS } from '../lego/colors';
 import { compileProgram, type ShapeProgram, type ShapeSpec } from '../lego/shapes';
 import { assemble } from '../lego/steps';
 import type { Model } from '../lego/types';
+import { DEFAULT_MODEL, type ModelSize } from './models';
 
 /**
  * "LEGO anything": Claude designs the model as a list of solid shapes (a shape
@@ -14,13 +15,6 @@ import type { Model } from '../lego/types';
  * api.anthropic.com.
  */
 
-export const DEFAULT_MODEL = 'claude-opus-5-5';
-export const MODEL_OPTIONS = [
-  { id: 'claude-opus-5-5', label: 'Claude Opus 5.5 (best)' },
-  { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5 (faster)' },
-];
-
-export type ModelSize = 'small' | 'medium' | 'large';
 const SIZE_STUDS: Record<ModelSize, number> = { small: 16, medium: 26, large: 36 };
 
 const COLOR_ENUM = [...Object.keys(COLORS), 'none'];
@@ -152,6 +146,15 @@ export function programToModel(program: ShapeProgram, prompt: string): Model {
 }
 
 export async function generateModel(opts: GenerateOpts): Promise<{ model: Model; program: ShapeProgram }> {
+  try {
+    return await runGeneration(opts);
+  } catch (e) {
+    if (opts.signal?.aborted) throw e;
+    throw new Error(describeError(e));
+  }
+}
+
+async function runGeneration(opts: GenerateOpts): Promise<{ model: Model; program: ShapeProgram }> {
   const client = new Anthropic({ apiKey: opts.apiKey, dangerouslyAllowBrowser: true });
   opts.onProgress?.('Designing the shape…');
   const stream = client.beta.messages.stream(
@@ -189,7 +192,7 @@ export async function generateModel(opts: GenerateOpts): Promise<{ model: Model;
   return { model: programToModel(program, opts.prompt), program };
 }
 
-export function describeError(e: unknown): string {
+function describeError(e: unknown): string {
   if (e instanceof Anthropic.AuthenticationError) return 'That API key was rejected. Check it in Settings.';
   if (e instanceof Anthropic.PermissionDeniedError) return 'This API key is not allowed to use that model.';
   if (e instanceof Anthropic.RateLimitError) return 'Rate limited by the API. Wait a moment and try again.';

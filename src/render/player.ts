@@ -198,6 +198,16 @@ export class BuildEngine {
     }
   }
 
+  private ray = new THREE.Raycaster();
+  /** Which (visible, resting) brick is under the given client coordinates? */
+  pickAt(clientX: number, clientY: number): number | null {
+    const el = this.viewer.renderer.domElement;
+    const r = el.getBoundingClientRect();
+    const ndc = new THREE.Vector2(((clientX - r.left) / r.width) * 2 - 1, -((clientY - r.top) / r.height) * 2 + 1);
+    this.ray.setFromCamera(ndc, this.viewer.camera);
+    return this.mesh.pick(this.ray);
+  }
+
   /** Record the whole build to a video file in real time. */
   record(onDone: (blob: Blob, ext: string) => void) {
     const canvas = this.viewer.renderer.domElement;

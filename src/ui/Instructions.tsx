@@ -11,7 +11,7 @@ export const PAGE_H = 792;
 
 type Page =
   | { kind: 'cover' }
-  | { kind: 'steps'; steps: number[]; cap: number; sub?: string; bag: number; bagStart: boolean }
+  | { kind: 'steps'; steps: number[]; cap: number; sub?: string; bag: number; bagStart: boolean; wide?: boolean }
   | { kind: 'final' }
   | { kind: 'inventory'; items: InvItem[]; index: number; of: number };
 
@@ -52,9 +52,20 @@ export function paginate(model: Model): Page[] {
   const fd = diag(final) || 1;
   const cur = { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
   const capOf: number[] = [];
+  const wideOf: boolean[] = [];
+  // Approximate on-screen aspect of a box seen from the manual's 3/4 view.
+  const az = ((model.heroView ?? 35) * Math.PI) / 180;
+  const el = (30 * Math.PI) / 180;
+  const screenAspect = (b: typeof final) => {
+    const dx = b.max[0] - b.min[0], dy = b.max[1] - b.min[1], dz = b.max[2] - b.min[2];
+    const w = Math.abs(dx * Math.cos(az)) + Math.abs(dz * Math.sin(az));
+    const h = dy * Math.cos(el) + (Math.abs(dx * Math.sin(az)) + Math.abs(dz * Math.cos(az))) * Math.sin(el);
+    return w / Math.max(0.1, h);
+  };
   for (const s of model.steps) {
     if (s.sub) {
       capOf.push(6);
+      wideOf.push(false);
       continue;
     }
     for (const id of s.bricks) grow(cur, model.bricks[id]);
@@ -63,6 +74,7 @@ export function paginate(model: Model): Page[] {
     // Small, simple builds get more steps per page; big models get room to breathe.
     const small = model.bricks.length < 150;
     capOf.push(s.attaches ? 1 : f < 0.42 ? 4 : small || f < 0.85 ? 2 : 1);
+    wideOf.push(screenAspect(cur) > 1.9);
   }
 
   let page: Extract<Page, { kind: 'steps' }> | null = null;
@@ -78,9 +90,10 @@ export function paginate(model: Model): Page[] {
     const sameKind = page && page.sub === s.sub;
     if (!page || !sameKind || bagStart || page.steps.length >= Math.min(page.cap, cap) || (!s.sub && cap < page.cap && page.steps.length >= cap)) {
       flush();
-      page = { kind: 'steps', steps: [], cap, sub: s.sub, bag: s.bag, bagStart };
+      page = { kind: 'steps', steps: [], cap, sub: s.sub, bag: s.bag, bagStart, wide: wideOf[i] };
     }
     page.steps.push(i);
+    page.wide = page.wide && wideOf[i];
     page.cap = Math.min(page.cap, cap);
   });
   flush();
@@ -140,7 +153,8 @@ const GRID: Record<number, [number, number]> = { 1: [1, 1], 2: [2, 1], 4: [2, 2]
 function StepsPage({ model, r, page, highlight }: { model: Model; r: StepRenderer; page: Extract<Page, { kind: 'steps' }>; highlight: boolean }) {
   const n = page.steps.length;
   const cap = page.sub ? (n <= 1 ? 1 : n <= 2 ? 2 : n <= 4 ? 4 : 6) : n <= 1 ? 1 : n <= 2 ? 2 : 4;
-  const [cols, rows] = GRID[cap];
+  // Two wide, flat steps read better stacked than side by side.
+  const [cols, rows] = cap === 2 && page.wide ? [1, 2] : GRID[cap];
   const pad = page.sub ? 70 : 40;
   const top = page.sub ? 70 : 34;
   const cellW = (PAGE_W - pad * 2) / cols;

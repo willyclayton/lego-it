@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_MODEL, describeError, generateModel, MODEL_OPTIONS, type ModelSize } from '../ai/generate';
+import { DEFAULT_MODEL, MODEL_OPTIONS, type ModelSize } from '../ai/models';
 import { buildMinutes, colorsUsed } from '../lego/inventory';
 import type { Model } from '../lego/types';
 import { realSizeCm, StepRenderer } from '../render/pageRenderer';
@@ -111,12 +111,13 @@ export function App() {
     abort.current = ctrl;
     setBusy('Starting…');
     try {
+      const { generateModel } = await import('../ai/generate');
       const { model: m } = await generateModel({ apiKey, prompt: p, size, model: aiModel, signal: ctrl.signal, onProgress: setBusy });
       setGenerated((g) => [m, ...g]);
       setModelId(m.id);
       setTab('build');
     } catch (err) {
-      if (!ctrl.signal.aborted) setNotice(describeError(err));
+      if (!ctrl.signal.aborted) setNotice(err instanceof Error ? err.message : String(err));
     } finally {
       setBusy(null);
       abort.current = null;

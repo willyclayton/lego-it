@@ -152,11 +152,11 @@ export class StepRenderer {
       lifted.translate(lift);
       box.union(lifted);
     }
-    // Keep a stable scale: never zoom in further than ~45% of the finished model.
+    // Keep a stable scale: never zoom in further than ~35% of the finished model.
     if (!isSub) {
       const finalSize = this.finalBox.getSize(new THREE.Vector3()).length();
       const size = box.getSize(new THREE.Vector3()).length();
-      if (size < finalSize * 0.45) box.expandByScalar((finalSize * 0.45 - size) / 3.4);
+      if (size < finalSize * 0.35) box.expandByScalar((finalSize * 0.35 - size) / 3.4);
     } else {
       const size = box.getSize(new THREE.Vector3()).length();
       if (size < 6) box.expandByScalar((6 - size) / 3.4);

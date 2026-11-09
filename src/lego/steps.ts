@@ -45,7 +45,9 @@ function sequence(items: Item[], maxPerStep: number, span: number): Item[][] {
   );
   const tops = new Set<number>();
   const bottoms = new Set<number>();
-  const minY = Math.min(...items.map((i) => i.y));
+  // The ground level of this group: ignore free-hanging parts like wheels (fractional heights).
+  const grounded = items.filter((i) => i.kind === 'sub' || (Number.isInteger(i.p.y) && !freeParts.has(part(i.p.part).kind)));
+  const minY = Math.min(...(grounded.length ? grounded : items).map((i) => i.y));
 
   const placeable = (it: Item) => {
     if (it.kind === 'sub') return true;

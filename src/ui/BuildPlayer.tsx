@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { download } from '../lego/export';
 import { stepParts } from '../lego/inventory';
+import { color } from '../lego/colors';
+import { part } from '../lego/parts';
 import { stepLabels } from '../lego/steps';
 import type { Model } from '../lego/types';
 import type { RenderStyle } from '../render/brickMesh';
@@ -29,6 +31,15 @@ export function BuildPlayer({ model, autoplay = true }: { model: Model; autoplay
   const [autoCam, setAutoCam] = useState(true);
   const [recording, setRecording] = useState(false);
   const [total, setTotal] = useState(1);
+  const [hover, setHover] = useState<{ id: number; x: number; y: number } | null>(null);
+  const lastPick = useRef(0);
+  const [narrow, setNarrow] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 760px)');
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
 
   useEffect(() => {
     const e = new BuildEngine(host.current!, model, style);
@@ -104,7 +115,25 @@ export function BuildPlayer({ model, autoplay = true }: { model: Model; autoplay
 
   return (
     <div className="player">
-      <div className="stage" ref={host} onPointerDown={() => unlockAudio()}>
+      <div
+        className="stage"
+        ref={host}
+        onPointerDown={() => {
+          unlockAudio();
+          setHover(null);
+        }}
+        onPointerLeave={() => setHover(null)}
+        onPointerMove={(ev) => {
+          const e = engine.current;
+          if (!e || e.playing || ev.buttons) return;
+          const now = performance.now();
+          if (now - lastPick.current < 90) return;
+          lastPick.current = now;
+          const id = e.pickAt(ev.clientX, ev.clientY);
+          const box = host.current!.getBoundingClientRect();
+          setHover(id === null ? null : { id, x: ev.clientX - box.left, y: ev.clientY - box.top });
+        }}
+      >
         <div className="step-overlay">
           {s && (
             <>
@@ -113,7 +142,7 @@ export function BuildPlayer({ model, autoplay = true }: { model: Model; autoplay
                 {s.attaches ? (
                   <div className="callout sub-note">Attach the {s.attaches.toLowerCase()}</div>
                 ) : (
-                  <PartCallout items={parts} scale={15} />
+                  <PartCallout items={parts} scale={narrow ? 9 : 15} />
                 )}
               </div>
               {s.sub && <div className="sub-badge">Sub-assembly · {s.sub} · built on the side</div>}
@@ -141,6 +170,19 @@ export function BuildPlayer({ model, autoplay = true }: { model: Model; autoplay
           )}
         </div>
         {recording && <div className="rec-badge">● Recording…</div>}
+        {hover && !playing && (
+          <div className="brick-tip" style={{ left: hover.x + 14, top: hover.y + 14 }}>
+            <b>{part(model.bricks[hover.id].part).name}</b>
+            <span>
+              <i className="swatch" style={{ background: color(model.bricks[hover.id].color).hex }} /> {color(model.bricks[hover.id].color).name} · #
+              {model.bricks[hover.id].part}
+            </span>
+            <span>
+              {labels[model.bricks[hover.id].step].sub ? `${labels[model.bricks[hover.id].step].sub} · step ` : 'Step '}
+              {labels[model.bricks[hover.id].step].num}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="transport">
@@ -183,6 +225,7 @@ export function BuildPlayer({ model, autoplay = true }: { model: Model; autoplay
           />
         </div>
         <span className="time" ref={timeLabel} />
+        {!playing && <span className="hint">Hover a brick to identify it · drag to orbit</span>}
         <span className="step-label">
           Step <b>{mainReached}</b> / {mainCount}
         </span>

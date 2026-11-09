@@ -65,7 +65,7 @@ export function PartsList({ model }: { model: Model }) {
           </h3>
           <div className="parts-grid">
             {list.map((it) => {
-              const img = partImage(it.part, it.color, 18);
+              const img = partImage(it.part, it.color, 26);
               const k = Math.min(1, 150 / img.w, 96 / img.h);
               const c = color(it.color);
               return (
