@@ -160,12 +160,14 @@ export class BuildEngine {
   private frame(dt: number) {
     if (this.playing) {
       const prev = this.t;
-      this.t = Math.min(this.t + dt * this.speed, this.sch.total);
+      // the finished-model turntable always plays at normal speed, however fast the build ran
+      const lastEnd = this.sch.stepEnd[this.sch.stepEnd.length - 1] ?? 0;
+      const rate = this.t >= lastEnd ? 1 : this.speed;
+      this.t = Math.min(this.t + dt * rate, this.sch.total);
       if (this.sound && !this.recorder) {
         const n = landingsBetween(this.sch, prev, this.t);
         if (n > 0) click(0.3);
       }
-      const lastEnd = this.sch.stepEnd[this.sch.stepEnd.length - 1] ?? 0;
       if (!this.finished && this.t >= lastEnd) {
         this.finished = true;
         if (this.sound) fanfare();
