@@ -22,7 +22,11 @@ export type PartKind =
   | 'grille'
   | 'wheelHolder'
   | 'wheel'
-  | 'tire';
+  | 'tire'
+  | 'masonry'
+  | 'grilleBrick'
+  | 'antenna'
+  | 'bar';
 
 export interface PartDef {
   id: string; // LDraw / LEGO design id
@@ -64,6 +68,17 @@ const list: PartDef[] = [
   P('2456', 'Brick 2 x 6', 'brick', 2, 6, 3, 'Brick'),
   P('3007', 'Brick 2 x 8', 'brick', 2, 8, 3, 'Brick'),
   P('3006', 'Brick 2 x 10', 'brick', 2, 10, 3, 'Brick'),
+  // Tall bricks (columns, pilasters, curtain-wall mullions)
+  P('14716', 'Brick 1 x 1 x 3', 'brick', 1, 1, 9, 'Brick'),
+  P('22886', 'Brick 1 x 2 x 3', 'brick', 1, 2, 9, 'Brick'),
+  P('49311', 'Brick 1 x 4 x 3', 'brick', 1, 4, 9, 'Brick'),
+  P('2453b', 'Brick 1 x 1 x 5', 'brick', 1, 1, 15, 'Brick'),
+  P('2454', 'Brick 1 x 2 x 5', 'brick', 1, 2, 15, 'Brick'),
+  P('3754', 'Brick 1 x 6 x 5', 'brick', 1, 6, 15, 'Brick'),
+  // Textured bricks
+  P('98283', 'Brick 1 x 2 with Masonry Profile', 'masonry', 1, 2, 3, 'Brick'),
+  P('15533', 'Brick 1 x 4 with Masonry Profile', 'masonry', 1, 4, 3, 'Brick'),
+  P('2877', 'Brick 1 x 2 with Grille', 'grilleBrick', 1, 2, 3, 'Brick'),
   // Plates
   P('3024', 'Plate 1 x 1', 'plate', 1, 1, 1, 'Plate'),
   P('3023', 'Plate 1 x 2', 'plate', 1, 2, 1, 'Plate'),
@@ -123,6 +138,13 @@ const list: PartDef[] = [
   P('3942', 'Cone 2 x 2 x 2', 'cone', 2, 2, 6, 'Round', { radius: 0.98 }),
   P('4740', 'Dish 2 x 2 Inverted', 'dish', 2, 2, 1, 'Round', { radius: 0.98 }),
   P('3960', 'Dish 4 x 4 Inverted', 'dish', 4, 4, 1, 'Round', { radius: 1.98 }),
+  P('87081', 'Brick Round 4 x 4', 'round', 4, 4, 3, 'Round', { radius: 1.98 }),
+  P('60474', 'Plate Round 4 x 4 with Hole', 'round', 4, 4, 1, 'Round', { radius: 1.98 }),
+  P('11213', 'Plate Round 6 x 6 with Hole', 'round', 6, 6, 1, 'Round', { radius: 2.98 }),
+  // Antennas and bars (stand in a hollow stud)
+  P('3957', 'Antenna 4H', 'antenna', 1, 1, 12, 'Bar', { radius: 0.08 }),
+  P('2569', 'Antenna Whip 8H', 'antenna', 1, 1, 24, 'Bar', { radius: 0.07 }),
+  P('63965', 'Bar 6L with Stop Ring', 'bar', 1, 1, 15, 'Bar', { radius: 0.16 }),
   // Wheels
   P('4600', 'Plate 2 x 2 with Wheel Holders', 'wheelHolder', 2, 2, 1, 'Wheel'),
   P('4624', 'Wheel 8mm D. x 6mm with Slot', 'wheel', 1, 2, 4, 'Wheel', { radius: 0.5 }),
@@ -146,9 +168,12 @@ export function footprint(p: PartDef, rot: number): [number, number] {
 export const BRICKS_BY_SIZE: Record<string, string> = {};
 export const PLATES_BY_SIZE: Record<string, string> = {};
 export const TILES_BY_SIZE: Record<string, string> = {};
+/** Tall bricks by footprint and height in plates, e.g. "1x2x15". */
+export const TALL_BY_SIZE: Record<string, string> = {};
 for (const p of list) {
   const key = `${Math.min(p.w, p.l)}x${Math.max(p.w, p.l)}`;
-  if (p.kind === 'brick') BRICKS_BY_SIZE[key] = p.id;
+  if (p.kind === 'brick' && p.h === 3) BRICKS_BY_SIZE[key] = p.id;
+  if (p.kind === 'brick' && p.h > 3) TALL_BY_SIZE[`${key}x${p.h}`] = p.id;
   if (p.kind === 'plate') PLATES_BY_SIZE[key] = p.id;
   if (p.kind === 'tile') TILES_BY_SIZE[key] = p.id;
 }

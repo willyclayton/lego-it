@@ -282,9 +282,53 @@ function build(def: PartDef): PartGeo {
         lathe(acc, 0.5, 0.5, [[0, 0], [0.4, 0], [0.4, collar], [r, collar], [r, H], [0, H]], [false, true, true, true, true, false], 20);
         stud(acc, 0.5, H, 0.5);
       } else {
-        lathe(acc, w / 2, l / 2, [[0, 0], [r, 0], [r, H], [0, H]], [false, true, true, false], 24);
-        studGrid(acc, w, l, H);
+        lathe(acc, w / 2, l / 2, [[0, 0], [r, 0], [r, H], [0, H]], [false, true, true, false], w > 2 ? 40 : 24);
+        // studs only where they fit inside the circle (a 4x4 round has 12, a 6x6 has 32)
+        for (let z = 0; z < l; z++)
+          for (let x = 0; x < w; x++) if (Math.hypot(x + 0.5 - w / 2, z + 0.5 - l / 2) <= r - 0.28) stud(acc, x + 0.5, H, z + 0.5);
       }
+      break;
+    }
+    case 'masonry': {
+      box(acc, g, 0, g, w - g, H, l - g);
+      studGrid(acc, w, l, H);
+      // brick-and-mortar grooves on all four sides: two courses per brick, staggered joints
+      const e = 0.003;
+      const course = [H * 0.36, H * 0.68];
+      for (const y of course) {
+        acc.line(V(-e + g, y, g - e), V(-e + g, y, l - g + e));
+        acc.line(V(w - g + e, y, g - e), V(w - g + e, y, l - g + e));
+        acc.line(V(g, y, g - e), V(w - g, y, g - e));
+        acc.line(V(g, y, l - g + e), V(w - g, y, l - g + e));
+      }
+      const bands: [number, number][] = [[0.04, course[0]], [course[0], course[1]], [course[1], H - 0.04]];
+      bands.forEach(([y0, y1], i) => {
+        for (let zz = (i % 2 ? 0.5 : 1) ; zz < l; zz += 1) {
+          acc.line(V(g - e, y0, zz), V(g - e, y1, zz));
+          acc.line(V(w - g + e, y0, zz), V(w - g + e, y1, zz));
+        }
+      });
+      break;
+    }
+    case 'grilleBrick': {
+      box(acc, g, 0, g, w - g, H, l - g);
+      studGrid(acc, w, l, H);
+      const e = 0.003;
+      for (let i = 1; i < 6; i++) {
+        const zz = (l * i) / 6;
+        acc.line(V(g - e, 0.12, zz), V(g - e, H - 0.12, zz));
+        acc.line(V(w - g + e, 0.12, zz), V(w - g + e, H - 0.12, zz));
+      }
+      break;
+    }
+    case 'antenna': {
+      const r = def.radius ?? 0.08;
+      lathe(acc, 0.5, 0.5, [[0, 0], [0.3, 0], [0.3, 0.2], [r * 1.6, 0.35], [r, 0.6], [r, H - 0.12], [r * 1.7, H - 0.06], [0, H]], [false, true, true, true, false, false, true, false], 10);
+      break;
+    }
+    case 'bar': {
+      const r = def.radius ?? 0.16;
+      lathe(acc, 0.5, 0.5, [[0, 0], [r, 0], [r, 0.5], [r * 1.5, 0.5], [r * 1.5, 0.62], [r, 0.62], [r, H], [0, H]], [false, true, true, true, true, true, true, false], 12);
       break;
     }
     case 'roundTile': {

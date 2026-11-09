@@ -1,5 +1,5 @@
 import { RECT_SIZES } from './builder';
-import { BRICKS_BY_SIZE, PLATES_BY_SIZE, TILES_BY_SIZE } from './parts';
+import { BRICKS_BY_SIZE, PLATES_BY_SIZE, TALL_BY_SIZE, TILES_BY_SIZE } from './parts';
 import type { Placement, Rot } from './types';
 
 /** Height of one plate in stud units (3.2 mm / 8 mm). */
@@ -184,7 +184,12 @@ export interface BrickifyOpts {
   bricks?: boolean;
   /** Use tiles (no studs) on exposed top surfaces of plate layers. */
   tilesOnTop?: boolean;
-  /** Colors that should always be tiled on top (e.g. decorative panels). */
+  /** Use tall bricks (1x1x5, 1x2x5, 1x6x5, 1x1x3, 1x2x3, 1x4x3) for uniform columns on outer walls. */
+  tall?: boolean;
+  /** Swap plain 1x2 / 1x4 bricks of these colors for textured ones. */
+  texture?: Record<string, 'masonry' | 'grille'>;
+  /** Cells covered by something outside this grid (keeps studs there instead of tiles). */
+  covered?: (x: number, y: number, z: number) => boolean;
   phase?: number;
   sub?: string;
 }
@@ -195,6 +200,10 @@ const rectId = (kind: 'brick' | 'plate' | 'tile', a: number, b: number) => {
 };
 
 const k2 = (x: number, z: number) => (x + OFF) + (z + OFF) * 1024;
+const TALL: { h: number; lens: number[] }[] = [
+  { h: 15, lens: [6, 2, 1] },
+  { h: 9, lens: [4, 2, 1] },
+];
 
 /**
  * Convert voxels into a buildable list of bricks, plates and tiles.
@@ -207,9 +216,18 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
   const out: Placement[] = [];
   if (grid.size === 0) return out;
   const { y0, y1 } = grid.bounds();
+  // bucket cells by layer once (big buildings have tens of thousands of voxels)
+  const layers = new Map<number, [number, number, string][]>();
+  grid.forEach((x, y, z, c) => {
+    let l = layers.get(y);
+    if (!l) layers.set(y, (l = []));
+    l.push([x, z, c]);
+  });
   /** cell → index of placement occupying it (for seam scoring). */
   const occ = new Map<number, number>();
   const consumed = new Set<number>();
+  const exposed = (x: number, y: number, z: number) =>
+    !grid.has(x + 1, y, z) || !grid.has(x - 1, y, z) || !grid.has(x, y, z + 1) || !grid.has(x, y, z - 1);
 
   const pack = (cells: Map<number, string>, kind: 'brick' | 'plate' | 'tile', y: number, h: number, layerParity: number) => {
     const sizes = RECT_SIZES[kind];
@@ -247,7 +265,14 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
       }
       if (!best) continue;
       const idx = out.length;
-      const id = rectId(kind, best.sx, best.sz)!;
+      let id = rectId(kind, best.sx, best.sz)!;
+      const tex = kind === 'brick' ? opts.texture?.[col] : undefined;
+      if (tex && Math.min(best.sx, best.sz) === 1) {
+        const len = Math.max(best.sx, best.sz);
+        if (tex === 'masonry' && len === 2) id = '98283';
+        if (tex === 'masonry' && len === 4) id = '15533';
+        if (tex === 'grille' && len === 2) id = '2877';
+      }
       const rot: Rot = best.sx > best.sz ? 1 : 0;
       out.push({ part: id, color: col, x, y, z, rot, phase: opts.phase, sub: opts.sub });
       for (let dz = 0; dz < best.sz; dz++)
@@ -258,16 +283,61 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
     }
   };
 
+  /** Tall bricks for uniform 1-wide columns on the outside walls (pilasters, mullions, piers). */
+  const packTall = (base: number) => {
+    for (const { h, lens } of TALL) {
+      if (base + h > y1) continue;
+      const run = (x: number, z: number, c: string) => {
+        for (let dy = 0; dy < h; dy++) {
+          const kk = key(x, base + dy, z);
+          if (consumed.has(kk) || grid.get(x, base + dy, z) !== c) return false;
+        }
+        return true;
+      };
+      // the outer two rings of cells: the wall itself and whatever sits right behind
+      // recessed windows, so carved facades don't leave lone 1x1 bricks behind
+      const nearFace = (x: number, z: number) =>
+        exposed(x, base, z) ||
+        (grid.has(x + 1, base, z) && exposed(x + 1, base, z)) ||
+        (grid.has(x - 1, base, z) && exposed(x - 1, base, z)) ||
+        (grid.has(x, base, z + 1) && exposed(x, base, z + 1)) ||
+        (grid.has(x, base, z - 1) && exposed(x, base, z - 1));
+      for (const [x, z, c] of layers.get(base) ?? []) {
+        const kk = key(x, base, z);
+        if (consumed.has(kk) || !nearFace(x, z) || !run(x, z, c)) continue;
+        // run along the wall: the face direction decides the long axis
+        const faceZ = exposed(x, base, z)
+          ? !grid.has(x, base, z + 1) || !grid.has(x, base, z - 1)
+          : (grid.has(x, base, z + 1) && exposed(x, base, z + 1)) || (grid.has(x, base, z - 1) && exposed(x, base, z - 1));
+        const [dx, dz] = faceZ ? [1, 0] : [0, 1];
+        let n = 1;
+        while (n < lens[0] && nearFace(x + dx * n, z + dz * n) && run(x + dx * n, z + dz * n, c)) n++;
+        const len = lens.find((l) => l <= n)!;
+        const id = TALL_BY_SIZE[`1x${len}x${h}`];
+        if (!id) continue;
+        const idx = out.length;
+        out.push({ part: id, color: c, x, y: base, z, rot: (dx === 1 && len > 1 ? 1 : 0) as Rot, phase: opts.phase, sub: opts.sub });
+        for (let i = 0; i < len; i++)
+          for (let dy = 0; dy < h; dy++) {
+            const ck = key(x + dx * i, base + dy, z + dz * i);
+            consumed.add(ck);
+            occ.set(ck, idx);
+          }
+      }
+    }
+  };
+
   // brick courses are aligned to the bottom of the shape
   const start = y0;
   for (let base = start; base < y1; base += 3) {
     const parity = Math.floor((base - start) / 3);
+    if (opts.tall) packTall(base);
     if (useBricks) {
       const bc = new Map<number, string>();
-      grid.forEach((x, y, z, c) => {
-        if (y !== base) return;
-        if (grid.get(x, y + 1, z) === c && grid.get(x, y + 2, z) === c) bc.set(k2(x, z), c);
-      });
+      for (const [x, z, c] of layers.get(base) ?? []) {
+        if (consumed.has(key(x, base, z)) || consumed.has(key(x, base + 1, z)) || consumed.has(key(x, base + 2, z))) continue;
+        if (grid.get(x, base + 1, z) === c && grid.get(x, base + 2, z) === c) bc.set(k2(x, z), c);
+      }
       for (const kk of bc.keys()) {
         const x = (kk % 1024) - OFF, z = Math.floor(kk / 1024) - OFF;
         for (let dy = 0; dy < 3; dy++) consumed.add(key(x, base + dy, z));
@@ -277,11 +347,11 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
     for (let y = base; y < base + 3; y++) {
       const plates = new Map<number, string>();
       const tiles = new Map<number, string>();
-      grid.forEach((x, yy, z, c) => {
-        if (yy !== y || consumed.has(key(x, y, z))) return;
-        if (opts.tilesOnTop && !grid.has(x, y + 1, z)) tiles.set(k2(x, z), c);
+      for (const [x, z, c] of layers.get(y) ?? []) {
+        if (consumed.has(key(x, y, z))) continue;
+        if (opts.tilesOnTop && !grid.has(x, y + 1, z) && !opts.covered?.(x, y + 1, z)) tiles.set(k2(x, z), c);
         else plates.set(k2(x, z), c);
-      });
+      }
       pack(plates, 'plate', y, 1, parity + (y - base));
       pack(tiles, 'tile', y, 1, parity + (y - base));
     }

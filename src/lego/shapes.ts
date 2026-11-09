@@ -45,6 +45,12 @@ export interface CompileOpts {
   sub?: string;
   /** Grid offset added to every placement (stud/plate units). */
   offset?: [number, number, number];
+  /** Tall bricks on outer walls; textured bricks by color (see brickify). */
+  tall?: boolean;
+  texture?: Record<string, 'masonry' | 'grille'>;
+  /** Keep small detached fragments (details that sit on another grid). */
+  keepFragments?: boolean;
+  covered?: (x: number, y: number, z: number) => boolean;
 }
 
 const ALIASES: Record<string, string> = {
@@ -266,13 +272,13 @@ export function compileProgram(program: ShapeProgram, opts: CompileOpts = {}): P
 }
 
 export function compileGrid(grid: VoxelGrid, opts: CompileOpts = {}): Placement[] {
-  removeFloating(grid);
+  if (!opts.keepFragments) removeFloating(grid);
   if (grid.size === 0) return [];
   const b = grid.bounds();
   const [ox, oy, oz] = opts.offset ?? [-b.x0, 0, -b.z0];
   if (opts.hollow) grid.hollow(opts.hollow);
   const slopes = opts.slopes ? slopePass(grid) : [];
-  const bricks = brickify(grid, { tilesOnTop: opts.tilesOnTop });
+  const bricks = brickify(grid, { tilesOnTop: opts.tilesOnTop, tall: opts.tall, texture: opts.texture, covered: opts.covered });
   return [...bricks, ...slopes].map((p) => ({
     ...p,
     x: p.x + ox,
