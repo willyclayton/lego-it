@@ -1,7 +1,5 @@
 # Lego It
 
-**Live site:** https://claude.ai/artifact/7WmhUZ69D6618jLtwkANNa (hosted on claude.ai; private until shared from the page's Share menu)
-
 Turn anything into a brick model you can actually build, with:
 
 1. **Build animation** – the whole model assembles brick by brick in 3D: parts drop in and click into place, sub-assemblies are built on the side and flown in, and the camera follows the model as it grows. Scrub, change speed, step through, hover any brick to identify it, and record the build as a video.
@@ -34,6 +32,16 @@ npm run build      # static site in dist/
 npx tsx scripts/stats.ts   # piece/step stats + overlap check for every sample
 npm run build:artifact     # build + dist/artifact.html for the claude.ai-hosted page
 ```
+
+## Deploy to Vercel
+
+The repo is ready for Vercel with no extra settings (`vercel.json`: Vite, `npm ci`, `npm run build`, output `dist/`).
+
+1. Go to https://vercel.com/new and import `willyclayton/lego-it`.
+2. Keep the detected settings and click **Deploy**.
+3. Every push redeploys. Pushes to the production branch (usually `main`) update the live site; other branches get preview URLs. To go live from a different branch, change it under *Project → Settings → Git → Production Branch*.
+
+On Vercel, "Build anything" uses the visitor's own Claude API key (entered in Settings, kept in their browser). The samples, animation, instructions, exports and print work without any key.
 
 ### Hosted vs. self-hosted
 
