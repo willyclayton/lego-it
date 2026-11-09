@@ -1,12 +1,13 @@
 import { buildModel } from '../lego/steps';
 import type { Model } from '../lego/types';
+import { bean } from './buildings/bean';
 import { boardOfTrade, mart, monadnock, rookery, tribune, waterTower, wrigleyBuilding } from './buildings/historic';
 import { marinaCity, robieHouse, wrigleyField } from './buildings/special';
 import { aon, aqua, carbide, hancock, lakePoint, stRegis, trump, twoPru, wacker333 } from './buildings/towers';
 import { willis } from './buildings/willis';
 import type { ChicagoSource } from './kit';
 
-/** The Chicago catalog: 20 landmarks, tallest first. */
+/** The Chicago catalog, tallest first. */
 export const CHICAGO: ChicagoSource[] = [
   willis,
   trump,
@@ -28,6 +29,7 @@ export const CHICAGO: ChicagoSource[] = [
   waterTower,
   wrigleyField,
   robieHouse,
+  bean,
 ];
 
 const cache = new Map<string, Model>();

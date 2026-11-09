@@ -312,7 +312,7 @@ export function App() {
         <section className="shelf" aria-label="Chicago buildings">
           <button className="card card-back" onClick={() => go({ view: 'catalog', collection: 'chicago', id: modelId })}>
             <span className="card-back-arrow">←</span>
-            <span className="card-name">All 20 buildings</span>
+            <span className="card-name">All {CHICAGO.length} landmarks</span>
             <span className="card-meta">Chicago catalog</span>
           </button>
           {CHICAGO.map((c) => (

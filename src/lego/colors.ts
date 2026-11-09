@@ -57,6 +57,7 @@ export const COLORS: Record<string, LegoColor> = Object.fromEntries(
     C('dark-orange', 'Dark Orange', 'Dark Orange', 484, 68, '#A95500', '#333333'),
     C('medium-nougat', 'Medium Nougat', 'Medium Nougat', 84, 150, '#AA7D55', '#333333'),
     C('pearl-gold', 'Pearl Gold', 'Warm Gold', 297, 115, '#AA7F2E', '#333333', { metal: true }),
+    C('chrome-silver', 'Chrome Silver', 'Silver (chrome)', 383, 22, '#E0E0E0', '#333333', { metal: true }),
     C('flat-silver', 'Flat Silver', 'Silver Metallic', 179, 95, '#898788', '#333333', { metal: true }),
     C('trans-clear', 'Trans-Clear', 'Transparent', 47, 12, '#FCFCFC', '#9AA4AA', { trans: true }),
     C('trans-light-blue', 'Trans-Light Blue', 'Transparent Light Blue', 43, 15, '#AEEFEC', '#7FA9B0', { trans: true }),

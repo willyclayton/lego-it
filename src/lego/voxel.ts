@@ -226,6 +226,7 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
   /** cell → index of placement occupying it (for seam scoring). */
   const occ = new Map<number, number>();
   const consumed = new Set<number>();
+  const openTop = (x: number, y: number, z: number) => !grid.has(x, y + 1, z) && !opts.covered?.(x, y + 1, z);
   const exposed = (x: number, y: number, z: number) =>
     !grid.has(x + 1, y, z) || !grid.has(x - 1, y, z) || !grid.has(x, y, z + 1) || !grid.has(x, y, z - 1);
 
@@ -292,7 +293,8 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
           const kk = key(x, base + dy, z);
           if (consumed.has(kk) || grid.get(x, base + dy, z) !== c) return false;
         }
-        return true;
+        // keep smooth tops smooth: a column whose top is open gets a tile there instead
+        return !(opts.tilesOnTop && openTop(x, base + h - 1, z));
       };
       // the outer two rings of cells: the wall itself and whatever sits right behind
       // recessed windows, so carved facades don't leave lone 1x1 bricks behind
@@ -336,6 +338,7 @@ export function brickify(grid: VoxelGrid, opts: BrickifyOpts = {}): Placement[] 
       const bc = new Map<number, string>();
       for (const [x, z, c] of layers.get(base) ?? []) {
         if (consumed.has(key(x, base, z)) || consumed.has(key(x, base + 1, z)) || consumed.has(key(x, base + 2, z))) continue;
+        if (opts.tilesOnTop && openTop(x, base + 2, z)) continue;
         if (grid.get(x, base + 1, z) === c && grid.get(x, base + 2, z) === c) bc.set(k2(x, z), c);
       }
       for (const kk of bc.keys()) {

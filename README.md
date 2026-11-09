@@ -17,32 +17,33 @@ Each model also shows piece count, step count, age, difficulty, estimated build 
 
 ## Chicago Buildings catalog
 
-Twenty Chicago landmarks as detailed display models, each on a black base with a nameplate, with the real story behind the building (year, architect, height, floors, style, location, a fact) and its model scale. The catalog page opens with a skyline of all twenty drawn to real height. Link straight to it with `#chicago`, or to a building with `#chicago/willis-tower`.
+21 Chicago landmarks as detailed display models, each on a black base with a nameplate, with the real story behind the building (year, architect, height, floors, style, location, a fact) and its model scale. The catalog page opens with a skyline of all of them drawn to real height. Link straight to it with `#chicago`, or to a building with `#chicago/willis-tower`.
 
 ![Chicago Buildings catalog](docs/screenshots/chicago-catalog.png)
 
 | Building | Year | Pieces | What makes it recognizable |
 |---|---|---:|---|
-| Willis Tower | 1974 | 748 | Nine bundled tubes stepping back at floors 50, 66 and 90; black frame, bronze glass, twin antennas |
-| Trump International Hotel & Tower | 2009 | 479 | Setbacks aligned with the Wrigley Building, Marina City and 330 N. Wabash; spire |
-| St. Regis Chicago | 2020 | 682 | Three towers of alternating frustums rising toward the west; blow-through floors |
-| Aon Center | 1973 | 1,282 | White chevron piers with recessed windows and notched corners |
-| 875 North Michigan (Hancock) | 1969 | 936 | Taper, five tiers of X-bracing, twin antennas |
-| Two Prudential Plaza | 1990 | 639 | Chevron setbacks, pyramid turned 45°, spire |
+| Willis Tower | 1974 | 804 | Nine bundled tubes stepping back at floors 50, 66 and 90; black frame, bronze glass, twin antennas |
+| Trump International Hotel & Tower | 2009 | 622 | Setbacks aligned with the Wrigley Building, Marina City and 330 N. Wabash; spire |
+| St. Regis Chicago | 2020 | 685 | Three towers of alternating frustums rising toward the west; blow-through floors |
+| Aon Center | 1973 | 1,354 | White chevron piers with recessed windows and notched corners |
+| 875 North Michigan (Hancock) | 1969 | 990 | Taper, five tiers of X-bracing, twin antennas |
+| Two Prudential Plaza | 1990 | 815 | Chevron setbacks, pyramid turned 45°, spire |
 | Aqua | 2009 | 611 | Undulating white balcony slabs over blue glass, green-roofed podium |
-| Lake Point Tower | 1968 | 1,203 | Three-lobed plan in dark bronze glass, park on the podium |
-| Chicago Board of Trade | 1930 | 986 | Art Deco “throne”, copper pyramid, Ceres, the clock over LaSalle Street |
-| Marina City | 1964 | 239 | Corncob towers from round plates: spiral garage below, balconies above |
+| Lake Point Tower | 1968 | 1,242 | Three-lobed plan in dark bronze glass, park on the podium |
+| Chicago Board of Trade | 1930 | 1,229 | Art Deco “throne”, copper pyramid, Ceres, the clock over LaSalle Street |
+| Marina City | 1964 | 274 | Corncob towers from round plates: spiral garage below, balconies above |
 | Carbide & Carbon Building | 1929 | 582 | Dark green shaft, black granite base, gold crown |
-| 333 Wacker Drive | 1983 | 1,144 | Convex green-glass curve on the river, gridded city side |
-| Tribune Tower | 1925 | 699 | Gothic piers, octagonal crown with buttresses and pinnacles |
-| Wrigley Building | 1924 | 737 | White terra cotta, clock tower, sky bridges |
-| Merchandise Mart | 1930 | 426 | Two-block Art Deco mass with corner pavilions and central tower |
-| Monadnock Building | 1891 | 1,065 | Dark masonry slab, bay windows, flared base and cornice |
-| The Rookery | 1888 | 860 | Masonry walls around a glass-roofed light court, corbelled cornice |
-| Chicago Water Tower | 1869 | 499 | Castellated base, corner turrets, pinnacles, lantern |
-| Wrigley Field | 1914 | 655 | Grandstands, ivy wall, bleachers, scoreboard, red marquee |
+| 333 Wacker Drive | 1983 | 1,200 | Convex green-glass curve on the river, gridded city side |
+| Tribune Tower | 1925 | 825 | Gothic piers, octagonal crown with buttresses and pinnacles |
+| Wrigley Building | 1924 | 767 | White terra cotta, clock tower, sky bridges |
+| Merchandise Mart | 1930 | 738 | Two-block Art Deco mass with corner pavilions and central tower |
+| Monadnock Building | 1891 | 1,096 | Dark masonry slab, bay windows, flared base and cornice |
+| The Rookery | 1888 | 1,035 | Masonry walls around a glass-roofed light court, corbelled cornice |
+| Chicago Water Tower | 1869 | 619 | Castellated base, corner turrets, pinnacles, lantern |
+| Wrigley Field | 1914 | 824 | Grandstands, ivy wall, bleachers, scoreboard, red marquee |
 | Robie House | 1910 | 559 | Roman brick, art-glass bands, cantilevered roofs, central chimney |
+| Cloud Gate (The Bean) | 2006 | 810 | Chrome mercury-drop form, the 12-ft arch and omphalos underneath, visitors for scale; mirrors a skyline in the realistic view |
 
 The models are built with `src/chicago/kit.ts`: voxel massing, a facade painter that knows which way each wall faces (for piers, recessed windows, X-braces, bands), layered ground (plazas, the river, a ball field) and direct parts for crowns, spires and round elements. `npx tsx scripts/chicago-stats.ts` checks every model for overlapping parts, and `dev/preview.html#<id>` (or `#all`) renders models from several angles while you work on them.
 

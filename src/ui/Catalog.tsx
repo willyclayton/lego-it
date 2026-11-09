@@ -83,8 +83,9 @@ export function Catalog({ onOpen }: { onOpen: (id: string) => void }) {
           <p className="eyebrow">Architecture collection</p>
           <h1>Chicago Buildings</h1>
           <p className="cat-intro">
-            Twenty landmarks in bricks, from the {Math.min(...years)} Water Tower to the {Math.max(...years)} St. Regis. Every model has a 3D build animation,
-            a complete instruction booklet and a parts list, and sits on a display base like an architecture set.
+            {CHICAGO.length} landmarks in bricks, from the {Math.min(...years)} Water Tower to the {Math.max(...years)} St. Regis and the Bean in Millennium
+            Park. Every model has a 3D build animation, a complete instruction booklet and a parts list, and sits on a display base like an architecture
+            set.
           </p>
         </div>
         <label className="cat-sort">

@@ -32,6 +32,44 @@ export function brickWorldBox(p: Placement, out = new THREE.Box3()) {
 
 const linear = (hex: string) => new THREE.Color(hex); // Color() converts sRGB hex → linear working space
 
+/**
+ * What polished metal reflects in the realistic view: open sky, a band of city
+ * skyline at the horizon and a pale plaza below (equirectangular, linear colour).
+ */
+let sky: THREE.DataTexture | null = null;
+function skyEnv() {
+  if (sky) return sky;
+  const W = 256, H = 128;
+  const d = new Float32Array(W * H * 4);
+  const towers: number[] = [];
+  for (let i = 0; i < 64; i++) {
+    const n = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
+    towers.push(0.03 + n * n * 0.22);
+  }
+  for (let j = 0; j < H; j++) {
+    const el = (j / (H - 1) - 0.5) * Math.PI; // row 0 = straight down
+    for (let i = 0; i < W; i++) {
+      let c: [number, number, number];
+      const tower = towers[Math.floor((i / W) * towers.length)];
+      if (el < 0) c = [0.62, 0.6, 0.56];
+      else if (el < tower) {
+        const lit = (i + j) % 6 < 2 ? 0.08 : 0;
+        c = [0.16 + lit, 0.19 + lit, 0.25 + lit];
+      } else {
+        const t = Math.min(1, el / (Math.PI / 2));
+        c = [0.95 - 0.6 * t, 0.97 - 0.42 * t, 1.0 - 0.12 * t];
+      }
+      d.set([c[0], c[1], c[2], 1], (j * W + i) * 4);
+    }
+  }
+  sky = new THREE.DataTexture(d, W, H, THREE.RGBAFormat, THREE.FloatType);
+  sky.mapping = THREE.EquirectangularReflectionMapping;
+  sky.magFilter = THREE.LinearFilter;
+  sky.minFilter = THREE.LinearFilter;
+  sky.needsUpdate = true;
+  return sky;
+}
+
 /* ------------------------------ shader patching ------------------------------ */
 
 const VERT_HEAD = /* glsl */ `
@@ -135,9 +173,10 @@ export class BrickMesh {
   private uniforms: { uBrickData: THREE.IUniform };
   private opaque: THREE.Mesh;
   private trans: THREE.Mesh | null = null;
+  private metal: THREE.Mesh | null = null;
   private lines: THREE.LineSegments;
   private condLines: THREE.LineSegments;
-  private mats: Record<RenderStyle, { opaque: THREE.Material; trans: THREE.Material }>;
+  private mats: Record<RenderStyle, { opaque: THREE.Material; trans: THREE.Material; metal: THREE.Material }>;
   readonly bricks: Placement[];
   /** Brick world bounds (at rest). */
   readonly boxes: THREE.Box3[];
@@ -153,7 +192,8 @@ export class BrickMesh {
     this.uniforms = { uBrickData: { value: this.texture } };
     this.boxes = bricks.map((b) => brickWorldBox(b));
 
-    const op = this.buildMesh(bricks.map((b, i) => [b, i] as const).filter(([b]) => !legoColor(b.color).trans));
+    const op = this.buildMesh(bricks.map((b, i) => [b, i] as const).filter(([b]) => !legoColor(b.color).trans && !legoColor(b.color).metal));
+    const mt = this.buildMesh(bricks.map((b, i) => [b, i] as const).filter(([b]) => !!legoColor(b.color).metal));
     const tr = this.buildMesh(bricks.map((b, i) => [b, i] as const).filter(([b]) => legoColor(b.color).trans));
     const { hard, cond } = this.buildLines();
 
@@ -166,14 +206,19 @@ export class BrickMesh {
         style === 'realistic'
           ? new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.55, depthWrite: false })
           : new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.6, depthWrite: false });
-      for (const m of [opaque, trans]) {
+      // polished metal (chrome, gold, silver): a real mirror in the realistic view
+      const metal =
+        style === 'realistic'
+          ? new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.05, metalness: 1, envMap: skyEnv(), envMapIntensity: 1.15 })
+          : new THREE.MeshLambertMaterial({ vertexColors: true });
+      for (const m of [opaque, trans, metal]) {
         // push fills back a little so the outline lines never z-fight with their own faces
         m.polygonOffset = true;
         m.polygonOffsetFactor = 1;
         m.polygonOffsetUnits = 1;
         patch(m, this.uniforms, true);
       }
-      return { opaque, trans };
+      return { opaque, trans, metal };
     };
     this.mats = { instructions: mk('instructions'), realistic: mk('realistic') };
 
@@ -185,6 +230,14 @@ export class BrickMesh {
     patch(depth, this.uniforms, false);
     this.opaque.customDepthMaterial = depth;
     this.group.add(this.opaque);
+    if (mt.attributes.position.count > 0) {
+      this.metal = new THREE.Mesh(mt, this.mats.instructions.metal);
+      this.metal.frustumCulled = false;
+      this.metal.castShadow = true;
+      this.metal.receiveShadow = true;
+      this.metal.customDepthMaterial = depth;
+      this.group.add(this.metal);
+    }
     if (tr.attributes.position.count > 0) {
       this.trans = new THREE.Mesh(tr, this.mats.instructions.trans);
       this.trans.frustumCulled = false;
@@ -308,6 +361,7 @@ export class BrickMesh {
     this.style = style;
     this.opaque.material = this.mats[style].opaque;
     if (this.trans) this.trans.material = this.mats[style].trans;
+    if (this.metal) this.metal.material = this.mats[style].metal;
     this.lines.visible = edges;
     this.condLines.visible = edges;
     const op = style === 'realistic' ? 0.35 : 1;
@@ -349,7 +403,7 @@ export class BrickMesh {
 
   /** Brick id under a raycast hit, ignoring hidden bricks. */
   pick(raycaster: THREE.Raycaster): number | null {
-    const hits = raycaster.intersectObjects([this.opaque, ...(this.trans ? [this.trans] : [])], false);
+    const hits = raycaster.intersectObjects([this.opaque, ...(this.metal ? [this.metal] : []), ...(this.trans ? [this.trans] : [])], false);
     for (const h of hits) {
       const geo = (h.object as THREE.Mesh).geometry;
       const id = geo.attributes.brickId.getX(h.face!.a);
@@ -367,6 +421,7 @@ export class BrickMesh {
     for (const s of Object.values(this.mats)) {
       s.opaque.dispose();
       s.trans.dispose();
+      s.metal.dispose();
     }
     (this.lines.material as THREE.Material).dispose();
     (this.condLines.material as THREE.Material).dispose();
