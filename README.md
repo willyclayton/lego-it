@@ -1,5 +1,7 @@
 # Lego It
 
+**Live:** https://lego-it.vercel.app/
+
 Turn anything into a brick model you can actually build, with:
 
 1. **Build animation** – the whole model assembles brick by brick in 3D: parts drop in and click into place, sub-assemblies are built on the side and flown in, and the camera follows the model as it grows. Scrub, change speed, step through, hover any brick to identify it, and record the build as a video.
