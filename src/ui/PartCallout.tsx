@@ -4,7 +4,17 @@ import { partImage } from '../render/pageRenderer';
 
 /** The rounded "parts needed for this step" box from LEGO manuals: part renders with "2x" counts. */
 export function PartCallout({ items, scale = 16, className = '' }: { items: InvItem[]; scale?: number; className?: string }) {
-  const imgs = useMemo(() => items.map((it) => ({ it, img: partImage(it.part, it.color, scale) })), [items, scale]);
+  // Same scale for every part, but very large parts (big plates) are shrunk so the box never swamps the model.
+  const maxW = scale * 7, maxH = scale * 5;
+  const imgs = useMemo(
+    () =>
+      items.map((it) => {
+        const img = partImage(it.part, it.color, scale);
+        const k = Math.min(1, maxW / img.w, maxH / img.h);
+        return { it, img: { ...img, w: img.w * k, h: img.h * k } };
+      }),
+    [items, scale, maxW, maxH],
+  );
   if (!items.length) return null;
   return (
     <div className={`callout ${className}`}>
