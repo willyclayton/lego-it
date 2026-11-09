@@ -114,6 +114,8 @@ export function App() {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [settings, setSettings] = useState(false);
+  // on phones the "build anything" box stays tucked away until asked for
+  const [promptOpen, setPromptOpen] = useState(false);
   const [apiKey, setApiKey] = useState(() => readStore(KEY_STORE));
   const [remember, setRemember] = useState(() => !!readStore(KEY_STORE));
   const [aiModel, setAiModel] = useState(() => readStore(MODEL_STORE) || DEFAULT_MODEL);
@@ -194,6 +196,7 @@ export function App() {
         ({ model: m } = await generateModel({ apiKey, prompt: p, size, model: aiModel, signal: ctrl.signal, onProgress: setBusy }));
       }
       setGenerated((g) => [m, ...g]);
+      setPromptOpen(false);
       go({ view: 'model', collection: 'samples', id: m.id });
       setTab('build');
     } catch (err) {
@@ -212,20 +215,30 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
+      <header className={`topbar ${promptOpen ? 'prompt-open' : ''}`}>
         <button className="logo" onClick={() => go(CATALOG)} aria-label="Lego It, back to the catalog">
           <BrickLogo />
           <span>Lego&nbsp;It</span>
         </button>
         <nav className="topnav" aria-label="Collections">
           <button className={route.collection === 'chicago' ? 'on' : ''} onClick={() => go(CATALOG)}>
-            Chicago catalog
+            <span className="long">Chicago catalog</span>
+            <span className="short">Chicago</span>
           </button>
           <button className={starterView ? 'on' : ''} onClick={() => go({ view: 'model', collection: 'samples', id: SAMPLES.some((x) => x.id === modelId) ? modelId : 'freighter' })}>
-            Starter builds
+            <span className="long">Starter builds</span>
+            <span className="short">Starters</span>
           </button>
         </nav>
-        <form className="prompt" onSubmit={submit}>
+        <button
+          className="chip prompt-toggle"
+          aria-expanded={promptOpen}
+          aria-controls="build-anything"
+          onClick={() => setPromptOpen((o) => !o)}
+        >
+          {promptOpen ? 'Close' : '✦ Create'}
+        </button>
+        <form className="prompt" id="build-anything" onSubmit={submit}>
           <input
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -239,6 +252,9 @@ export function App() {
           </select>
           <button className="primary" type="submit" disabled={!!busy}>
             {busy ? 'Building…' : 'Build it'}
+          </button>
+          <button type="button" className="icon settings-inline" onClick={() => setSettings(true)} aria-label="Settings" title="Settings">
+            ⚙
           </button>
         </form>
         <button className="icon settings-btn" onClick={() => setSettings(true)} aria-label="Settings" title="Settings">
