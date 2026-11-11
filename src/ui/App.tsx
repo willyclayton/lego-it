@@ -12,11 +12,13 @@ import { ChicagoBuild } from './ChicagoBuild';
 import { InstructionBook, mainStepCount } from './Instructions';
 import { Studs } from './PartCallout';
 import { PartsList } from './PartsList';
+import { RiverBuild } from './RiverBuild';
+import { RiverTour } from './RiverTour';
 
 type Tab = 'build' | 'instructions' | 'parts';
-type Collection = 'samples' | 'chicago';
+type Collection = 'samples' | 'chicago' | 'river';
 interface Route {
-  view: 'catalog' | 'model';
+  view: 'catalog' | 'model' | 'tour';
   collection: Collection;
   id: string;
 }
@@ -26,13 +28,17 @@ const CATALOG: Route = { view: 'catalog', collection: 'chicago', id: '' };
 /** (no hash) or #chicago → the catalog, #chicago/<id> → build a Chicago landmark, #starter/<id> → a starter build. */
 function parseHash(): Route {
   const h = decodeURIComponent(location.hash.slice(1));
+  if (h === 'river') return { view: 'tour', collection: 'river', id: '' };
+  if (/^river\/\d+$/.test(h)) return { view: 'model', collection: 'river', id: h.slice(6) };
   if (h.startsWith('chicago/') && CHICAGO.some((c) => c.id === h.slice(8))) return { view: 'model', collection: 'chicago', id: h.slice(8) };
   const sample = h.startsWith('starter/') ? h.slice(8) : h; // older links used #<sample-id>
   if (SAMPLES.some((x) => x.id === sample)) return { view: 'model', collection: 'samples', id: sample };
   if (h === 'starter') return { view: 'model', collection: 'samples', id: 'freighter' };
   return CATALOG;
 }
-const hashOf = (r: Route) => (r.view === 'catalog' ? '#chicago' : r.collection === 'chicago' ? `#chicago/${r.id}` : `#starter/${r.id}`);
+const hashOf = (r: Route) =>
+  r.view === 'tour' ? '#river' : r.collection === 'river' ? `#river/${r.id}` : r.view === 'catalog' ? '#chicago' : r.collection === 'chicago' ? `#chicago/${r.id}` : `#starter/${r.id}`;
+const TOUR: Route = { view: 'tour', collection: 'river', id: '' };
 
 const KEY_STORE = 'legoit.apiKey';
 const MODEL_STORE = 'legoit.model';
@@ -146,8 +152,12 @@ export function App() {
 
   useEffect(() => {
     const name = model?.name ?? CHICAGO.find((c) => c.id === modelId)?.name;
+    if (route.collection === 'river') {
+      if (route.view === 'tour') document.title = 'Chicago River tour · Lego It';
+      return;
+    }
     document.title = route.view === 'catalog' || !name ? 'Chicago Buildings · Lego It' : `${name} · Lego It`;
-  }, [model, modelId, route.view]);
+  }, [model, modelId, route.view, route.collection]);
 
   const submit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -225,6 +235,10 @@ export function App() {
             <span className="long">Chicago catalog</span>
             <span className="short">Chicago</span>
           </button>
+          <button className={route.collection === 'river' ? 'on' : ''} onClick={() => go(TOUR)}>
+            <span className="long">Chicago River</span>
+            <span className="short">River</span>
+          </button>
           <button className={starterView ? 'on' : ''} onClick={() => go({ view: 'model', collection: 'samples', id: SAMPLES.some((x) => x.id === modelId) ? modelId : 'freighter' })}>
             <span className="long">Starter builds</span>
             <span className="short">Starters</span>
@@ -236,7 +250,7 @@ export function App() {
           aria-controls="build-anything"
           onClick={() => setPromptOpen((o) => !o)}
         >
-          {promptOpen ? 'Close' : '✦ Create'}
+          {promptOpen ? 'Close' : <>✦<span className="pt-label"> Create</span></>}
         </button>
         <form className="prompt" id="build-anything" onSubmit={submit}>
           <input
@@ -271,7 +285,11 @@ export function App() {
         </div>
       )}
 
-      {route.view === 'catalog' ? (
+      {route.view === 'tour' ? (
+        <RiverTour />
+      ) : route.collection === 'river' ? (
+        <RiverBuild key={modelId} id={Number(modelId)} onBack={() => go(TOUR)} />
+      ) : route.view === 'catalog' ? (
         <Catalog onOpen={(id) => go({ view: 'model', collection: 'chicago', id })} />
       ) : route.collection === 'chicago' ? (
         <ChicagoBuild key={modelId} id={modelId} onBack={() => go(CATALOG)} onOpen={(id) => go({ view: 'model', collection: 'chicago', id })} />

@@ -49,6 +49,25 @@ Catalog pictures are pre-rendered into `public/thumbs/` so the landing page appe
 
 The models are built with `src/chicago/kit.ts`: voxel massing, a facade painter that knows which way each wall faces (for piers, recessed windows, X-braces, bands), layered ground (plazas, the river, a ball field) and direct parts for crowns, spires and round elements. `npx tsx scripts/chicago-stats.ts` checks every model for overlapping parts, and `dev/preview.html#<id>` (or `#all`) renders models from several angles while you work on them.
 
+## Chicago River tour
+
+The **Chicago River** tab (`#river`) is a boat tour through a brick-built downtown: it starts on Lake Michigan outside the breakwater, passes Navy Pier and the harbor lock, runs the Main Stem to Wolf Point, goes up the North Branch to the turning basin at the top of Goose Island, comes back down the North Branch Canal, and follows the South Branch to Ping Tom Park in Chinatown (14.9 km). Tap any building or bridge for its details; **Build it** opens a build page (animation, instructions, parts list) for that building, and landmarks that are in the catalog also link to their detailed model. Drag to look around, pinch or scroll to zoom, jump with the stop chips, the slider or the map.
+
+What is real and what is not:
+
+- **From OpenStreetMap, as mapped:** the shoreline, river and canal, piers and breakwaters, streets, parks and rail yards; the footprint of all 15,372 buildings in the area, rasterised at one stud = 4 m (about 1:500, one plate = 1.6 m); building names and addresses; the position, direction, length and width of all 37 bridges over the route; the route itself, which follows the mapped river centerlines.
+- **Heights:** the mapped height where OpenStreetMap has one (nearly every tower, including 3D building parts for Willis Tower, Marina City, the Merchandise Mart and others), otherwise estimated from the mapped floor count, otherwise a default by building type. The details card says which. A few dozen riverfront landmarks were checked by hand (`scripts/river/curated.py`).
+- **Bridge and landmark facts** (names, years, bridge types, architects, the stories) are hand-written in `scripts/river/curated.py`.
+- **Stylised:** facades are one of four generic brick patterns in an approximate colour, bridges are drawn from a handful of structural types (pony truss, deck truss, double deck, through truss, vertical lift, raised leaf, tied arch), and nothing below street level (Lower Wacker, the Riverwalk steps) is modelled.
+
+Map data © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, available under the Open Database License. `public/river/` is a derived database under the same licence. To rebuild it:
+
+```bash
+mkdir data && cp scripts/river/waterlines.json data/
+python3 scripts/river/fetch_osm.py data     # downloads the map tiles from the OpenStreetMap API
+python3 scripts/river/build_data.py data    # needs numpy and Pillow; writes public/river/
+```
+
 ## Sample builds (least → most complex)
 
 | Model | Pieces | Steps | Highlights |
@@ -116,6 +135,7 @@ src/lego/      parts catalog, colors, voxel grid + brick converter, shape progra
                step generator, inventory, LDraw/BrickLink/CSV export
 src/render/    part geometry, merged brick mesh + shaders, viewer, page renderer,
                animation timeline, playback engine
+src/river/     the river tour: world loader, brick-city mesher and shaders, bridges, boat, picking
 src/samples/   the five built-in models
 src/ai/        Claude-powered generation
 src/ui/        React app: build player, instruction book, parts list

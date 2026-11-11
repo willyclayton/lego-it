@@ -1,0 +1,832 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-11-10T15:30:21Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 24984723,
+  "bounds": {
+    "minlat": 41.8445503,
+    "minlon": -87.6644337,
+    "maxlat": 41.8495264,
+    "maxlon": -87.6438839
+  },
+  "geometry": [
+    { "lat": 41.8495264, "lon": -87.6438839 },
+    { "lat": 41.8493781, "lon": -87.6461288 },
+    { "lat": 41.8492710, "lon": -87.6467027 },
+    { "lat": 41.8484670, "lon": -87.6491103 },
+    { "lat": 41.8483869, "lon": -87.6495758 },
+    { "lat": 41.8483680, "lon": -87.6503961 },
+    { "lat": 41.8483403, "lon": -87.6506942 },
+    { "lat": 41.8481272, "lon": -87.6519773 },
+    { "lat": 41.8479593, "lon": -87.6529689 },
+    { "lat": 41.8479515, "lon": -87.6533041 },
+    { "lat": 41.8483358, "lon": -87.6560186 },
+    { "lat": 41.8483143, "lon": -87.6566943 },
+    { "lat": 41.8481954, "lon": -87.6571172 },
+    { "lat": 41.8480147, "lon": -87.6575478 },
+    { "lat": 41.8477609, "lon": -87.6579882 },
+    { "lat": 41.8468781, "lon": -87.6592685 },
+    { "lat": 41.8460198, "lon": -87.6604541 },
+    { "lat": 41.8456438, "lon": -87.6611157 },
+    { "lat": 41.8451145, "lon": -87.6621191 },
+    { "lat": 41.8446076, "lon": -87.6631779 },
+    { "lat": 41.8445503, "lon": -87.6634158 },
+    { "lat": 41.8447157, "lon": -87.6644337 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "intermittent": "no",
+    "name": "South Branch Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 164030677,
+  "bounds": {
+    "minlat": 41.8884180,
+    "minlon": -87.6076134,
+    "maxlat": 41.8884573,
+    "maxlon": -87.6052184
+  },
+  "geometry": [
+    { "lat": 41.8884573, "lon": -87.6052184 },
+    { "lat": 41.8884180, "lon": -87.6076134 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "lock": "yes",
+    "motorboat": "yes",
+    "name": "Chicago Harbor Lock",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "toll": "no",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 164125005,
+  "bounds": {
+    "minlat": 41.8890736,
+    "minlon": -87.6582296,
+    "maxlat": 41.9090903,
+    "maxlon": -87.6395115
+  },
+  "geometry": [
+    { "lat": 41.9090903, "lon": -87.6574412 },
+    { "lat": 41.9090086, "lon": -87.6574836 },
+    { "lat": 41.9084992, "lon": -87.6577532 },
+    { "lat": 41.9082744, "lon": -87.6578168 },
+    { "lat": 41.9066451, "lon": -87.6580240 },
+    { "lat": 41.9054480, "lon": -87.6581868 },
+    { "lat": 41.9051035, "lon": -87.6582296 },
+    { "lat": 41.9048588, "lon": -87.6582216 },
+    { "lat": 41.9044131, "lon": -87.6581113 },
+    { "lat": 41.9041540, "lon": -87.6579934 },
+    { "lat": 41.9039784, "lon": -87.6578652 },
+    { "lat": 41.9037370, "lon": -87.6576108 },
+    { "lat": 41.9033524, "lon": -87.6572996 },
+    { "lat": 41.9029165, "lon": -87.6568085 },
+    { "lat": 41.9025607, "lon": -87.6564950 },
+    { "lat": 41.9021842, "lon": -87.6563079 },
+    { "lat": 41.9017473, "lon": -87.6561899 },
+    { "lat": 41.9014611, "lon": -87.6561267 },
+    { "lat": 41.9011841, "lon": -87.6559050 },
+    { "lat": 41.9009430, "lon": -87.6556039 },
+    { "lat": 41.9007559, "lon": -87.6552882 },
+    { "lat": 41.9005523, "lon": -87.6547484 },
+    { "lat": 41.9003753, "lon": -87.6541421 },
+    { "lat": 41.9000665, "lon": -87.6520573 },
+    { "lat": 41.8997695, "lon": -87.6514305 },
+    { "lat": 41.8991070, "lon": -87.6504502 },
+    { "lat": 41.8982518, "lon": -87.6493260 },
+    { "lat": 41.8981431, "lon": -87.6490539 },
+    { "lat": 41.8980753, "lon": -87.6487563 },
+    { "lat": 41.8979932, "lon": -87.6480597 },
+    { "lat": 41.8979924, "lon": -87.6475387 },
+    { "lat": 41.8978159, "lon": -87.6456915 },
+    { "lat": 41.8977616, "lon": -87.6450534 },
+    { "lat": 41.8975254, "lon": -87.6447394 },
+    { "lat": 41.8970880, "lon": -87.6443066 },
+    { "lat": 41.8969622, "lon": -87.6442754 },
+    { "lat": 41.8966631, "lon": -87.6442014 },
+    { "lat": 41.8942943, "lon": -87.6441430 },
+    { "lat": 41.8941218, "lon": -87.6440655 },
+    { "lat": 41.8938603, "lon": -87.6437828 },
+    { "lat": 41.8936052, "lon": -87.6435693 },
+    { "lat": 41.8927025, "lon": -87.6422481 },
+    { "lat": 41.8922809, "lon": -87.6418027 },
+    { "lat": 41.8915647, "lon": -87.6411716 },
+    { "lat": 41.8912943, "lon": -87.6411090 },
+    { "lat": 41.8905977, "lon": -87.6406595 },
+    { "lat": 41.8894409, "lon": -87.6396247 },
+    { "lat": 41.8892039, "lon": -87.6395460 },
+    { "lat": 41.8890736, "lon": -87.6395115 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "name": "North Branch Chicago River",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 407267816,
+  "bounds": {
+    "minlat": 41.8863953,
+    "minlon": -87.6377617,
+    "maxlat": 41.8887419,
+    "maxlon": -87.6252968
+  },
+  "geometry": [
+    { "lat": 41.8887419, "lon": -87.6252968 },
+    { "lat": 41.8875606, "lon": -87.6277714 },
+    { "lat": 41.8875448, "lon": -87.6293534 },
+    { "lat": 41.8875339, "lon": -87.6313699 },
+    { "lat": 41.8875319, "lon": -87.6317497 },
+    { "lat": 41.8875160, "lon": -87.6341378 },
+    { "lat": 41.8875109, "lon": -87.6355963 },
+    { "lat": 41.8865413, "lon": -87.6375505 },
+    { "lat": 41.8863953, "lon": -87.6377617 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "intermittent": "no",
+    "name": "Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 911629843,
+  "bounds": {
+    "minlat": 41.8884573,
+    "minlon": -87.6052184,
+    "maxlat": 41.8884592,
+    "maxlon": -87.6050545
+  },
+  "geometry": [
+    { "lat": 41.8884592, "lon": -87.6050545 },
+    { "lat": 41.8884581, "lon": -87.6051503 },
+    { "lat": 41.8884573, "lon": -87.6052184 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "intermittent": "no",
+    "lock": "no",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "toll": "no",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 911629844,
+  "bounds": {
+    "minlat": 41.8884010,
+    "minlon": -87.6135948,
+    "maxlat": 41.8884166,
+    "maxlon": -87.6078321
+  },
+  "geometry": [
+    { "lat": 41.8884166, "lon": -87.6078321 },
+    { "lat": 41.8884010, "lon": -87.6103288 },
+    { "lat": 41.8884124, "lon": -87.6119724 },
+    { "lat": 41.8884086, "lon": -87.6135948 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "intermittent": "no",
+    "motorboat": "yes",
+    "name": "Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "toll": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1040130236,
+  "bounds": {
+    "minlat": 41.8977616,
+    "minlon": -87.6567994,
+    "maxlat": 41.9103260,
+    "maxlon": -87.6450534
+  },
+  "geometry": [
+    { "lat": 41.9103260, "lon": -87.6567994 },
+    { "lat": 41.9102479, "lon": -87.6558050 },
+    { "lat": 41.9102044, "lon": -87.6552835 },
+    { "lat": 41.9101015, "lon": -87.6549989 },
+    { "lat": 41.9097022, "lon": -87.6545923 },
+    { "lat": 41.9094418, "lon": -87.6543726 },
+    { "lat": 41.9061562, "lon": -87.6516002 },
+    { "lat": 41.9054415, "lon": -87.6510615 },
+    { "lat": 41.9043653, "lon": -87.6499721 },
+    { "lat": 41.9039245, "lon": -87.6495711 },
+    { "lat": 41.9038065, "lon": -87.6495158 },
+    { "lat": 41.9034311, "lon": -87.6494723 },
+    { "lat": 41.9033336, "lon": -87.6494028 },
+    { "lat": 41.9030407, "lon": -87.6490665 },
+    { "lat": 41.9025921, "lon": -87.6487020 },
+    { "lat": 41.9020850, "lon": -87.6482380 },
+    { "lat": 41.9018899, "lon": -87.6478070 },
+    { "lat": 41.9006265, "lon": -87.6465671 },
+    { "lat": 41.9003083, "lon": -87.6463219 },
+    { "lat": 41.8990817, "lon": -87.6456971 },
+    { "lat": 41.8986629, "lon": -87.6454505 },
+    { "lat": 41.8982934, "lon": -87.6452329 },
+    { "lat": 41.8977616, "lon": -87.6450534 }
+  ],
+  "tags": {
+    "canoe": "yes",
+    "name": "North Branch Canal",
+    "tidal": "no",
+    "waterway": "canal",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1040139075,
+  "bounds": {
+    "minlat": 41.8447157,
+    "minlon": -87.6646668,
+    "maxlat": 41.8487664,
+    "maxlon": -87.6644337
+  },
+  "geometry": [
+    { "lat": 41.8487664, "lon": -87.6646668 },
+    { "lat": 41.8467742, "lon": -87.6646175 },
+    { "lat": 41.8460398, "lon": -87.6645189 },
+    { "lat": 41.8450834, "lon": -87.6644706 },
+    { "lat": 41.8447157, "lon": -87.6644337 }
+  ],
+  "tags": {
+    "name": "Arnald's Canal",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 1040139076,
+  "bounds": {
+    "minlat": 41.8451145,
+    "minlon": -87.6623622,
+    "maxlat": 41.8510156,
+    "maxlon": -87.6621191
+  },
+  "geometry": [
+    { "lat": 41.8510156, "lon": -87.6623622 },
+    { "lat": 41.8454557, "lon": -87.6621365 },
+    { "lat": 41.8451145, "lon": -87.6621191 }
+  ],
+  "tags": {
+    "name": "Stetson's Canal",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 1040139077,
+  "bounds": {
+    "minlat": 41.8468781,
+    "minlon": -87.6597987,
+    "maxlat": 41.8496936,
+    "maxlon": -87.6592685
+  },
+  "geometry": [
+    { "lat": 41.8496936, "lon": -87.6597987 },
+    { "lat": 41.8473893, "lon": -87.6596755 },
+    { "lat": 41.8471032, "lon": -87.6595148 },
+    { "lat": 41.8468781, "lon": -87.6592685 }
+  ],
+  "tags": {
+    "name": "Sampson's Canal",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 1040139078,
+  "bounds": {
+    "minlat": 41.8483143,
+    "minlon": -87.6570295,
+    "maxlat": 41.8488180,
+    "maxlon": -87.6566943
+  },
+  "geometry": [
+    { "lat": 41.8488180, "lon": -87.6570295 },
+    { "lat": 41.8485152, "lon": -87.6567611 },
+    { "lat": 41.8483143, "lon": -87.6566943 }
+  ],
+  "tags": {
+    "name": "Throop's Canal",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 1040139079,
+  "bounds": {
+    "minlat": 41.8481272,
+    "minlon": -87.6524273,
+    "maxlat": 41.8504594,
+    "maxlon": -87.6519773
+  },
+  "geometry": [
+    { "lat": 41.8504594, "lon": -87.6524273 },
+    { "lat": 41.8481272, "lon": -87.6519773 }
+  ],
+  "tags": {
+    "name": "Mason's Canal",
+    "waterway": "canal"
+  }
+},
+{
+  "type": "way",
+  "id": 1040239988,
+  "bounds": {
+    "minlat": 41.8884124,
+    "minlon": -87.6172524,
+    "maxlat": 41.8904331,
+    "maxlon": -87.6119724
+  },
+  "geometry": [
+    { "lat": 41.8903520, "lon": -87.6172524 },
+    { "lat": 41.8903714, "lon": -87.6146646 },
+    { "lat": 41.8903090, "lon": -87.6144645 },
+    { "lat": 41.8903187, "lon": -87.6135497 },
+    { "lat": 41.8903958, "lon": -87.6132795 },
+    { "lat": 41.8904331, "lon": -87.6126090 },
+    { "lat": 41.8903464, "lon": -87.6122018 },
+    { "lat": 41.8901177, "lon": -87.6120498 },
+    { "lat": 41.8884124, "lon": -87.6119724 }
+  ],
+  "tags": {
+    "canoe": "yes",
+    "intermittent": "no",
+    "name": "Ogden Slip",
+    "name:etymology:wikidata": "Q295380",
+    "name:etymology:wikipedia": "en:William B. Ogden",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "tidal": "no",
+    "waterway": "canal",
+    "wikidata": "Q110408572",
+    "wikipedia": "en:Ogden Slip"
+  }
+},
+{
+  "type": "way",
+  "id": 1308480104,
+  "bounds": {
+    "minlat": 41.8673000,
+    "minlon": -87.6382474,
+    "maxlat": 41.8863953,
+    "maxlon": -87.6347233
+  },
+  "geometry": [
+    { "lat": 41.8863953, "lon": -87.6377617 },
+    { "lat": 41.8861587, "lon": -87.6377931 },
+    { "lat": 41.8856313, "lon": -87.6377542 },
+    { "lat": 41.8845873, "lon": -87.6379271 },
+    { "lat": 41.8843452, "lon": -87.6379477 },
+    { "lat": 41.8832895, "lon": -87.6380876 },
+    { "lat": 41.8824039, "lon": -87.6381869 },
+    { "lat": 41.8817893, "lon": -87.6382474 },
+    { "lat": 41.8805201, "lon": -87.6382329 },
+    { "lat": 41.8792423, "lon": -87.6381054 },
+    { "lat": 41.8782001, "lon": -87.6377348 },
+    { "lat": 41.8766991, "lon": -87.6374212 },
+    { "lat": 41.8757994, "lon": -87.6368648 },
+    { "lat": 41.8752240, "lon": -87.6363831 },
+    { "lat": 41.8745676, "lon": -87.6360269 },
+    { "lat": 41.8739672, "lon": -87.6358928 },
+    { "lat": 41.8721382, "lon": -87.6354858 },
+    { "lat": 41.8704712, "lon": -87.6351589 },
+    { "lat": 41.8699773, "lon": -87.6350620 },
+    { "lat": 41.8694479, "lon": -87.6349819 },
+    { "lat": 41.8674637, "lon": -87.6347424 },
+    { "lat": 41.8673000, "lon": -87.6347233 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "intermittent": "no",
+    "name": "South Branch Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1308480105,
+  "bounds": {
+    "minlat": 41.8599958,
+    "minlon": -87.6347233,
+    "maxlat": 41.8673000,
+    "maxlon": -87.6344983
+  },
+  "geometry": [
+    { "lat": 41.8673000, "lon": -87.6347233 },
+    { "lat": 41.8640603, "lon": -87.6346403 },
+    { "lat": 41.8609997, "lon": -87.6345231 },
+    { "lat": 41.8599958, "lon": -87.6344983 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "intermittent": "no",
+    "name": "South Branch Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1312070332,
+  "bounds": {
+    "minlat": 41.8883526,
+    "minlon": -87.6252968,
+    "maxlat": 41.8888887,
+    "maxlon": -87.6135948
+  },
+  "geometry": [
+    { "lat": 41.8884086, "lon": -87.6135948 },
+    { "lat": 41.8884067, "lon": -87.6137330 },
+    { "lat": 41.8883690, "lon": -87.6164491 },
+    { "lat": 41.8883526, "lon": -87.6176507 },
+    { "lat": 41.8885760, "lon": -87.6203156 },
+    { "lat": 41.8888005, "lon": -87.6226207 },
+    { "lat": 41.8888887, "lon": -87.6245958 },
+    { "lat": 41.8887883, "lon": -87.6252036 },
+    { "lat": 41.8887419, "lon": -87.6252968 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "intermittent": "no",
+    "name": "Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1315569906,
+  "bounds": {
+    "minlat": 41.9107718,
+    "minlon": -87.6635028,
+    "maxlat": 41.9161370,
+    "maxlon": -87.6568073
+  },
+  "geometry": [
+    { "lat": 41.9156640, "lon": -87.6635028 },
+    { "lat": 41.9155749, "lon": -87.6633212 },
+    { "lat": 41.9155307, "lon": -87.6629800 },
+    { "lat": 41.9155478, "lon": -87.6627154 },
+    { "lat": 41.9158390, "lon": -87.6620525 },
+    { "lat": 41.9161182, "lon": -87.6614301 },
+    { "lat": 41.9161370, "lon": -87.6611389 },
+    { "lat": 41.9160180, "lon": -87.6608348 },
+    { "lat": 41.9157432, "lon": -87.6603273 },
+    { "lat": 41.9151553, "lon": -87.6592966 },
+    { "lat": 41.9145175, "lon": -87.6584705 },
+    { "lat": 41.9140458, "lon": -87.6580940 },
+    { "lat": 41.9136112, "lon": -87.6578463 },
+    { "lat": 41.9127778, "lon": -87.6576076 },
+    { "lat": 41.9110009, "lon": -87.6568124 },
+    { "lat": 41.9107718, "lon": -87.6568073 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "name": "North Branch Chicago River",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1315569907,
+  "bounds": {
+    "minlat": 41.9103260,
+    "minlon": -87.6568073,
+    "maxlat": 41.9107718,
+    "maxlon": -87.6567994
+  },
+  "geometry": [
+    { "lat": 41.9107718, "lon": -87.6568073 },
+    { "lat": 41.9103260, "lon": -87.6567994 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "name": "North Branch Chicago River",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1315569908,
+  "bounds": {
+    "minlat": 41.9156640,
+    "minlon": -87.6743950,
+    "maxlat": 41.9250503,
+    "maxlon": -87.6635028
+  },
+  "geometry": [
+    { "lat": 41.9250503, "lon": -87.6743950 },
+    { "lat": 41.9248860, "lon": -87.6743899 },
+    { "lat": 41.9245873, "lon": -87.6743673 },
+    { "lat": 41.9244262, "lon": -87.6743045 },
+    { "lat": 41.9234728, "lon": -87.6731177 },
+    { "lat": 41.9228239, "lon": -87.6722337 },
+    { "lat": 41.9226359, "lon": -87.6718329 },
+    { "lat": 41.9224318, "lon": -87.6706623 },
+    { "lat": 41.9223993, "lon": -87.6696701 },
+    { "lat": 41.9222620, "lon": -87.6690234 },
+    { "lat": 41.9220873, "lon": -87.6683074 },
+    { "lat": 41.9219160, "lon": -87.6680712 },
+    { "lat": 41.9213592, "lon": -87.6677600 },
+    { "lat": 41.9207037, "lon": -87.6672830 },
+    { "lat": 41.9201630, "lon": -87.6666153 },
+    { "lat": 41.9188489, "lon": -87.6656264 },
+    { "lat": 41.9183746, "lon": -87.6651890 },
+    { "lat": 41.9177884, "lon": -87.6645614 },
+    { "lat": 41.9173107, "lon": -87.6643992 },
+    { "lat": 41.9165734, "lon": -87.6641593 },
+    { "lat": 41.9159622, "lon": -87.6639460 },
+    { "lat": 41.9158263, "lon": -87.6638357 },
+    { "lat": 41.9156640, "lon": -87.6635028 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "name": "North Branch Chicago River",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1317703968,
+  "bounds": {
+    "minlat": 41.8863953,
+    "minlon": -87.6395115,
+    "maxlat": 41.8890736,
+    "maxlon": -87.6377617
+  },
+  "geometry": [
+    { "lat": 41.8890736, "lon": -87.6395115 },
+    { "lat": 41.8889497, "lon": -87.6394658 },
+    { "lat": 41.8886358, "lon": -87.6392755 },
+    { "lat": 41.8883829, "lon": -87.6391793 },
+    { "lat": 41.8872215, "lon": -87.6387979 },
+    { "lat": 41.8869919, "lon": -87.6386796 },
+    { "lat": 41.8868030, "lon": -87.6384690 },
+    { "lat": 41.8863953, "lon": -87.6377617 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "name": "North Branch Chicago River",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1317723635,
+  "bounds": {
+    "minlat": 41.9090903,
+    "minlon": -87.6574412,
+    "maxlat": 41.9103260,
+    "maxlon": -87.6567994
+  },
+  "geometry": [
+    { "lat": 41.9103260, "lon": -87.6567994 },
+    { "lat": 41.9094834, "lon": -87.6572370 },
+    { "lat": 41.9090903, "lon": -87.6574412 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "name": "North Branch Chicago River",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1324492725,
+  "bounds": {
+    "minlat": 41.8495264,
+    "minlon": -87.6438839,
+    "maxlat": 41.8577304,
+    "maxlon": -87.6351960
+  },
+  "geometry": [
+    { "lat": 41.8577304, "lon": -87.6351960 },
+    { "lat": 41.8576053, "lon": -87.6352039 },
+    { "lat": 41.8572333, "lon": -87.6353878 },
+    { "lat": 41.8568628, "lon": -87.6356066 },
+    { "lat": 41.8566755, "lon": -87.6357515 },
+    { "lat": 41.8557150, "lon": -87.6368426 },
+    { "lat": 41.8554549, "lon": -87.6372862 },
+    { "lat": 41.8550974, "lon": -87.6380240 },
+    { "lat": 41.8549103, "lon": -87.6383673 },
+    { "lat": 41.8546202, "lon": -87.6389878 },
+    { "lat": 41.8544508, "lon": -87.6392148 },
+    { "lat": 41.8541535, "lon": -87.6395024 },
+    { "lat": 41.8525025, "lon": -87.6406332 },
+    { "lat": 41.8507555, "lon": -87.6419379 },
+    { "lat": 41.8502136, "lon": -87.6423757 },
+    { "lat": 41.8500602, "lon": -87.6425841 },
+    { "lat": 41.8495856, "lon": -87.6435534 },
+    { "lat": 41.8495264, "lon": -87.6438839 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "intermittent": "no",
+    "name": "South Branch Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1324492726,
+  "bounds": {
+    "minlat": 41.8577304,
+    "minlon": -87.6351960,
+    "maxlat": 41.8599958,
+    "maxlon": -87.6344821
+  },
+  "geometry": [
+    { "lat": 41.8599958, "lon": -87.6344983 },
+    { "lat": 41.8593419, "lon": -87.6344821 },
+    { "lat": 41.8584115, "lon": -87.6350153 },
+    { "lat": 41.8581613, "lon": -87.6351587 },
+    { "lat": 41.8577304, "lon": -87.6351960 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "no",
+    "intermittent": "no",
+    "name": "South Branch Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+},
+{
+  "type": "way",
+  "id": 1503477152,
+  "bounds": {
+    "minlat": 41.8884166,
+    "minlon": -87.6078321,
+    "maxlat": 41.8884180,
+    "maxlon": -87.6076134
+  },
+  "geometry": [
+    { "lat": 41.8884180, "lon": -87.6076134 },
+    { "lat": 41.8884173, "lon": -87.6077217 },
+    { "lat": 41.8884166, "lon": -87.6078321 }
+  ],
+  "tags": {
+    "boat": "yes",
+    "canoe": "yes",
+    "deep_draft": "yes",
+    "lock": "no",
+    "motorboat": "yes",
+    "name": "Chicago River",
+    "oneway:canoe": "no",
+    "rapids": "no",
+    "ship": "yes",
+    "source:deep_draft": "National Transportation Atlas Database 2011",
+    "tidal": "no",
+    "toll": "no",
+    "waterway": "river",
+    "wikidata": "Q643284",
+    "wikipedia": "en:Chicago River"
+  }
+}
+
+  ]
+}
