@@ -9,6 +9,67 @@ const SPEEDS = [1, 2, 4, 8, 16];
 /** where the boat was when the tour was last left, so "back" returns to the same spot */
 let resume = { s: 0, speed: 4 };
 
+const INTRO_KEY = 'legoit.riverIntroDone';
+function introDone() {
+  try {
+    return localStorage.getItem(INTRO_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** A short how-to shown when the tour opens, until the visitor ticks the box. */
+function Intro({ onStart }: { onStart: (skipNextTime: boolean) => void }) {
+  const [skip, setSkip] = useState(false);
+  const start = () => onStart(skip);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onStart(skip);
+      }
+    };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [skip, onStart]);
+  return (
+    <div className="rv-intro-wrap" role="dialog" aria-modal="true" aria-labelledby="rv-intro-title">
+      <div className="rv-intro">
+        <p className="eyebrow">Chicago River tour</p>
+        <h2 id="rv-intro-title">Welcome aboard</h2>
+        <p className="rv-intro-lead">
+          A 15 km boat ride through a brick-built Chicago: from Lake Michigan past Navy Pier, along the Main Stem to Wolf Point, around Goose Island and
+          down the South Branch to Chinatown.
+        </p>
+        <ol className="rv-steps">
+          <li>
+            <b>Ride along.</b> The boat sails on its own. Pause, change speed or scrub with the bar at the bottom.
+          </li>
+          <li>
+            <b>Look around.</b> Drag to turn the camera, pinch or scroll to zoom. ⟲ puts the camera back behind the boat.
+          </li>
+          <li>
+            <b>Tap anything.</b> Every building and bridge has details. Name tags mark the landmarks.
+          </li>
+          <li>
+            <b>Build it.</b> Pick a building and tap <i>Build it</i> for its animation, instructions and parts list.
+          </li>
+          <li>
+            <b>Jump ahead.</b> Use the stops (Navy Pier, Wolf Point, Goose Island…) or tap the map.
+          </li>
+        </ol>
+        <label className="rv-skip">
+          <input type="checkbox" checked={skip} onChange={(e) => setSkip(e.target.checked)} /> Don’t show this next time
+        </label>
+        <button className="primary rv-start" onClick={start} autoFocus>
+          Start the tour ›
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const MINI_COLORS = ['#8f9aa0', '#4fb4c6', '#2f8f8c', '#c9ced2', '#8a8d8a', '#63b25f', '#e6d5a8', '#a39a85', '#efdfb0', '#8a8a8a', '#b4bbbd'];
 
 function Minimap({ world, s, onSeek }: { world: World; s: number; onSeek: (s: number) => void }) {
@@ -137,6 +198,9 @@ export function RiverTour() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(resume.speed);
   const [sel, setSel] = useState<Selection | null>(null);
+  const [intro, setIntro] = useState(() => !introDone());
+  const introRef = useRef(intro);
+  introRef.current = intro;
   const [near, setNear] = useState<Sight[]>([]);
   const [now, setNow] = useState<Sight | null>(null);
   const tagEls = useRef(new Map<string, HTMLButtonElement>());
@@ -181,8 +245,9 @@ export function RiverTour() {
     };
     sc.onEnd = () => setPlaying(false);
     sc.onPick = (p) => setSel(p);
-    sc.playing = true;
-    setPlaying(true);
+    // the tour waits behind the tutorial; it sets sail when the visitor starts it
+    sc.playing = !introRef.current;
+    setPlaying(sc.playing);
     return () => {
       sc.dispose();
       scene.current = null;
@@ -250,7 +315,7 @@ export function RiverTour() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.closest('input, textarea, select')) return;
+      if ((e.target as HTMLElement)?.closest('input, textarea, select') || introRef.current) return;
       if (e.code === 'Space') {
         e.preventDefault();
         toggle();
@@ -324,7 +389,39 @@ export function RiverTour() {
               <button className="icon" onClick={() => scene.current?.resetView()} aria-label="Reset the view" title="Reset the view">
                 ⟲
               </button>
+              <button
+                className="icon"
+                onClick={() => {
+                  const sc = scene.current;
+                  if (sc) sc.playing = false;
+                  setPlaying(false);
+                  setSel(null);
+                  setIntro(true);
+                }}
+                aria-label="How the tour works"
+                title="How the tour works"
+              >
+                ?
+              </button>
             </div>
+            {intro && (
+              <Intro
+                onStart={(skip) => {
+                  if (skip)
+                    try {
+                      localStorage.setItem(INTRO_KEY, '1');
+                    } catch {
+                      /* storage unavailable: the tutorial shows again next time */
+                    }
+                  setIntro(false);
+                  const sc = scene.current;
+                  if (sc) {
+                    sc.playing = true;
+                    setPlaying(true);
+                  }
+                }}
+              />
+            )}
             {sel && <Details world={world} sel={sel} onClose={() => setSel(null)} />}
             <p className="rv-credit">
               Map data ©{' '}

@@ -51,7 +51,7 @@ The models are built with `src/chicago/kit.ts`: voxel massing, a facade painter 
 
 ## Chicago River tour
 
-The **Chicago River** tab (`#river`) is a boat tour through a brick-built downtown: it starts on Lake Michigan outside the breakwater, passes Navy Pier and the harbor lock, runs the Main Stem to Wolf Point, goes up the North Branch to the turning basin at the top of Goose Island, comes back down the North Branch Canal, and follows the South Branch to Ping Tom Park in Chinatown (14.9 km). Tap any building or bridge for its details; **Build it** opens a build page (animation, instructions, parts list) for that building, and landmarks that are in the catalog also link to their detailed model. Drag to look around, pinch or scroll to zoom, jump with the stop chips, the slider or the map.
+The **Chicago River** tab (`#river`) is a boat tour through a brick-built downtown: it starts on Lake Michigan outside the breakwater, passes Navy Pier and the harbor lock, runs the Main Stem to Wolf Point, goes up the North Branch to the turning basin at the top of Goose Island, comes back down the North Branch Canal, and follows the South Branch to Ping Tom Park in Chinatown (14.9 km). A short tutorial opens first (tick "Don’t show this next time" to skip it; the ? button brings it back). Tap any building or bridge for its details; **Build it** opens a build page (animation, instructions, parts list) for that building, and landmarks that are in the catalog also link to their detailed model. Drag to look around, pinch or scroll to zoom, jump with the stop chips, the slider or the map.
 
 What is real and what is not:
 
