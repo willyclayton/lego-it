@@ -1808,6 +1808,58 @@ a.chip {
   }
 }
 
+/* ---------------- order the parts ---------------- */
+.order {
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  background: #fffbe6;
+  padding: 14px 16px;
+  margin: 0 0 16px;
+}
+.order-main {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 16px;
+  align-items: center;
+}
+.order h3 {
+  margin: 0;
+  font-family: Outfit, Inter, sans-serif;
+  font-size: 18px;
+  grid-column: 1;
+}
+.order-main p {
+  margin: 0;
+  grid-column: 1;
+  line-height: 1.45;
+}
+.order-btn {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.order-steps {
+  margin: 12px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 4px;
+  line-height: 1.45;
+}
+.order-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+@media (max-width: 760px) {
+  .order-main {
+    grid-template-columns: 1fr;
+  }
+  .order-btn {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 8px;
+  }
+}
+
 @media print {
   @page {
     size: 297mm 210mm;

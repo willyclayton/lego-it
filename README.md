@@ -6,7 +6,7 @@ Turn anything into a brick model you can actually build, with:
 
 1. **Build animation** – the whole model assembles brick by brick in 3D: parts drop in and click into place, sub-assemblies are built on the side and flown in, and the camera follows the model as it grows. Scrub, change speed, step through, hover any brick to identify it, and record the build as a video.
 2. **Instructions that look like a real LEGO manual** – cover page, numbered steps with the rounded “parts needed” callout (`2x`), framed sub-assemblies with their own step numbers, attach arrows, “turn the model” icons, bag numbers, a finished-model page and the parts inventory at the back. Print it or save it as a PDF.
-3. **Piece overview** – every element with a render, count, part number and color, grouped by color or type, plus exports: **LDraw `.ldr`** (with build steps; opens in BrickLink Studio, LeoCAD, LDView), a **BrickLink Wanted List XML** and **CSV**.
+3. **Piece overview** – every element with a render, count, part number and color, grouped by color or type. **Order on BrickLink** copies the list and opens BrickLink’s Wanted List upload in one click (paste, verify, then *Buy All*); LEGO Pick a Brick has no list import. Exports: **LDraw `.ldr`** (with build steps; opens in BrickLink Studio, LeoCAD, LDView), a **BrickLink Wanted List XML** and **CSV**.
 4. **Build anything** – type an idea (“Millennium Falcon”, “a dragon”, “the Eiffel Tower”) and Claude designs it. Needs your own Claude API key (Settings ⚙). Without a key, prompts that match a sample open that sample.
 
 | Build animation | Instruction pages | Sub-assembly page |

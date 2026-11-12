@@ -30,8 +30,49 @@ export function PartsList({ model }: { model: Model }) {
     setStatus(r === 'unavailable' ? 'Saving files isn’t available here.' : r === 'declined' ? null : inArtifact && /\.(ldr|xml)$/.test(name) ? `Saved ${name} inside a .zip.` : null);
   };
 
+  const [order, setOrder] = useState<null | 'copied' | 'saved'>(null);
+  /** Copy the Wanted List to the clipboard and open BrickLink's upload page next to it. */
+  const orderOnBrickLink = async () => {
+    const xml = toBrickLinkXML(model);
+    // open the tab inside the click so pop-up blockers allow it
+    window.open('https://www.bricklink.com/v2/wanted/upload.page', '_blank', 'noopener');
+    try {
+      await navigator.clipboard.writeText(xml);
+      setOrder('copied');
+    } catch {
+      await saveFile(`${slug}-bricklink.xml`, xml);
+      setOrder('saved');
+    }
+  };
+  const pieces = model.bricks.length;
+
   return (
     <div className="parts">
+      <section className="order" aria-label="Order the parts">
+        <div className="order-main">
+          <h3>Order the parts</h3>
+          <p>
+            Buy all {pieces} pieces ({items.length} elements) from BrickLink sellers. One click copies the parts list and opens BrickLink’s Wanted List
+            upload; paste it there and BrickLink finds shops that have everything.
+          </p>
+          <button className="primary order-btn" onClick={orderOnBrickLink}>
+            Order on BrickLink ›
+          </button>
+        </div>
+        {order && (
+          <ol className="order-steps">
+            <li>{order === 'copied' ? 'The list is copied.' : 'The list was saved as an .xml file (copying wasn’t allowed here).'} Sign in to BrickLink in the tab that opened.</li>
+            <li>{order === 'copied' ? 'Paste into the box (Ctrl/⌘ + V)' : 'Choose the saved .xml file, or open it and paste its text into the box'}, then press <b>Proceed to verify items</b> and <b>Add to Wanted List</b>.</li>
+            <li>
+              Open the new Wanted List and press <b>Buy All</b>. <b>Easy Buy</b> picks the fewest shops that can fill the whole order.
+            </li>
+          </ol>
+        )}
+        <p className="order-note">
+          LEGO’s own Pick a Brick can’t import a list, so its parts have to be added there one at a time; the CSV below has every part number and
+          color to search for. A few rare elements may only be available used.
+        </p>
+      </section>
       <div className="parts-head">
         <div>
           <h2>
