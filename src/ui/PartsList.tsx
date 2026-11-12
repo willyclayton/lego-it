@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { color } from '../lego/colors';
-import { loadElements, orderList, orderXML, pickABrickCSV, toBrickLinkXML, toCSV, toLDraw, type OrderList } from '../lego/export';
+import { loadElements, onlyElements, orderList, orderXML, pickABrickCSV, toBrickLinkXML, toCSV, toLDraw, type OrderList } from '../lego/export';
 import { inArtifact, saveFile } from '../host';
 import { colorsUsed, inventory, sortParts, type InvItem } from '../lego/inventory';
 import { part } from '../lego/parts';
@@ -10,17 +10,19 @@ import { partImage } from '../render/pageRenderer';
 type GroupBy = 'color' | 'type';
 type Shop = 'lego' | 'bricklink' | 'brickowl';
 
-const SHOPS: Record<Shop, { name: string; blurb: string; url: string; steps: (copied: boolean, files: number) => string[] }> = {
+const SHOPS: Record<Shop, { name: string; blurb: string; url: string; steps: (copied: boolean, files: number, o?: OrderList | null) => string[] }> = {
   lego: {
     name: 'LEGO Pick a Brick',
     blurb: 'New parts straight from LEGO',
     url: 'https://www.lego.com/pick-and-build/pick-a-brick',
-    steps: (_c, files) => [
+    steps: (_c, files, o) => [
       files > 1
         ? `The list was saved as ${files} files: Pick a Brick takes at most 999 pieces per upload.`
         : 'The list was saved as a .csv file.',
-      'On the Pick a Brick page that opened, choose <b>Upload</b> (the upload-a-list button) and pick the file.',
-      'Pieces Pick a Brick doesn’t stock are left out of your bag; order those from BrickLink or Brick Owl.',
+      'On the Pick a Brick page that opened, choose <b>Upload List</b> and pick the file. Everything LEGO sells right now goes into your bag.',
+      `Pick a Brick then lists any pieces it can’t sell${
+        o && o.old.lines ? ` (expect about ${o.old.lines} of ${o.lines.length} lines here: those elements haven’t been in a LEGO set since 2023)` : ''
+      }. Use its <b>Download</b> button and load that file below to order just those from BrickLink or Brick Owl.`,
     ],
   },
   bricklink: {
@@ -96,6 +98,30 @@ export function PartsList({ model }: { model: Model }) {
       setStep({ shop, copied: false });
     }
   };
+  const [rest, setRest] = useState<OrderList | null>(null);
+  const [restMsg, setRestMsg] = useState<string | null>(null);
+  const loadRest = (text: string) => {
+    if (!order) return;
+    const r = onlyElements(order, text);
+    setRest(r.lines.length ? r : null);
+    setRestMsg(
+      r.lines.length
+        ? `${r.lines.length} ${r.lines.length === 1 ? 'line' : 'lines'}, ${r.lines.reduce((n, l) => n + l.count, 0)} pieces from this model. Send them to:`
+        : 'None of those element IDs are in this model’s list.',
+    );
+  };
+  const sendRest = async (shop: 'bricklink' | 'brickowl') => {
+    if (!rest) return;
+    window.open(SHOPS[shop].url, '_blank', 'noopener');
+    const xml = orderXML(rest);
+    try {
+      await navigator.clipboard.writeText(xml);
+      setRestMsg(`Copied. In the ${SHOPS[shop].name} tab: ${shop === 'bricklink' ? 'paste into the upload box and verify' : 'Wishlist → Import → BrickLink XML, paste'}.`);
+    } catch {
+      await saveFile(`${slug}-not-on-pick-a-brick.xml`, xml);
+      setRestMsg(`Saved as an .xml file. In the ${SHOPS[shop].name} tab, paste its text into the import box.`);
+    }
+  };
   const swappedCount = order ? order.swapped.reduce((n, x) => n + x.count, 0) : 0;
   const pabFiles = order ? pickABrickCSV(order).length : 1;
 
@@ -117,10 +143,48 @@ export function PartsList({ model }: { model: Model }) {
         </div>
         {step && (
           <ol className="order-steps">
-            {SHOPS[step.shop].steps(step.copied, pabFiles).map((t, i) => (
+            {SHOPS[step.shop].steps(step.copied, pabFiles, order).map((t, i) => (
               <li key={i} dangerouslySetInnerHTML={{ __html: t }} />
             ))}
           </ol>
+        )}
+        {step?.shop === 'lego' && (
+          <div className="order-rest">
+            <b>Pieces Pick a Brick couldn’t add?</b> Load the file from its <b>Download</b> button, or paste the element IDs, to order just those
+            elsewhere.
+            <div className="order-rest-row">
+              <label className="chip">
+                Load file
+                <input
+                  type="file"
+                  accept=".csv,.xml,.txt,text/csv"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void f.text().then(loadRest);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              <input className="order-paste" placeholder="or paste IDs, e.g. 6228588 4218987" onChange={(e) => e.target.value.trim() && loadRest(e.target.value)} />
+            </div>
+            {restMsg && (
+              <p className="order-rest-msg">
+                {restMsg}
+                {rest && (
+                  <>
+                    {' '}
+                    <button className="chip" onClick={() => void sendRest('bricklink')}>
+                      BrickLink ›
+                    </button>{' '}
+                    <button className="chip" onClick={() => void sendRest('brickowl')}>
+                      Brick Owl ›
+                    </button>
+                  </>
+                )}
+              </p>
+            )}
+          </div>
         )}
         {order && swappedCount > 0 && (
           <details className="order-swaps">

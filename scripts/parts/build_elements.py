@@ -10,6 +10,11 @@ Writes src/lego/elements.json:
   el:     "part|colour" -> LEGO element id (the number Pick a Brick uses), for every
           combination LEGO has produced
   sub:    "part|colour" -> colour to order instead, for combinations never produced
+  old:    "part|colour" keys whose element hasn't been in a set since RECENT (probably not on Pick a Brick)
+
+With inventory_parts.csv, inventories.csv and sets.csv in the same folder, each element
+is chosen by how often it appeared in recent sets (the one LEGO is still producing);
+without them, the newest element id is used.
 """
 import csv, json, os, re, sys
 from collections import defaultdict
@@ -26,6 +31,23 @@ cols = {int(r['id']): r for r in csv.DictReader(open(os.path.join(D, 'colors.csv
 el = defaultdict(dict)  # part -> colour -> [element ids]
 for r in csv.DictReader(open(os.path.join(D, 'elements.csv'))):
     el[r['part_num']].setdefault(int(r['color_id']), []).append(r['element_id'])
+
+# how often each element appeared in recent sets, from the set inventories (element ids are in the image urls)
+RECENT = 2023
+use, last = {}, {}
+if os.path.exists(os.path.join(D, 'inventory_parts.csv')):
+    year = {r['set_num']: int(r['year']) for r in csv.DictReader(open(os.path.join(D, 'sets.csv')))}
+    inv_year = {r['id']: year.get(r['set_num'], 0) for r in csv.DictReader(open(os.path.join(D, 'inventories.csv')))}
+    pat = re.compile(r'/elements/(\d+)\.jpg')
+    for r in csv.DictReader(open(os.path.join(D, 'inventory_parts.csv'))):
+        m_ = pat.search(r['img_url'])
+        if not m_: continue
+        e, y = m_.group(1), inv_year.get(r['inventory_id'], 0)
+        last[e] = max(last.get(e, 0), y)
+        if y >= RECENT: use[e] = use.get(e, 0) + 1
+def pick(ids):
+    """The element most used in recent sets, then the most recently used, then the newest id."""
+    return max(ids, key=lambda e: (use.get(e, 0), last.get(e, 0), int(e)))
 
 # LDraw colour numbers are Rebrickable's colour ids except for these
 COLOR_FIX = {324: 30, 330: 326}  # Medium Lavender, Olive Green
@@ -62,15 +84,19 @@ def dist(a, b):
 
 out_el, out_sub = {}, {}
 key_of = {cid: key for key, cid in cmap.items()}
-out_part = {}
+out_part, out_old = {}, []
 for p, rb in pmap.items():
     moulds = [rb] + [m for m in ALT.get(rb, []) if m in el]
     for key, cid in cmap.items():
         found = next(((m, el[m][cid]) for m in moulds if cid in el.get(m, {})), None)
         if found:
             m, ids = found
-            # the newest element id is the one still sold
-            out_el[f'{p}|{key}'] = max(ids, key=int)
+            # all moulds' elements compete, so a current older mould beats a retired newer one
+            ids = [e for m in moulds for e in el.get(m, {}).get(cid, [])]
+            best_e = pick(ids)
+            m = next(m for m in moulds if best_e in el.get(m, {}).get(cid, []))
+            out_el[f'{p}|{key}'] = best_e
+            if last and last.get(best_e, 0) < RECENT: out_old.append(f'{p}|{key}')
             if m != rb: out_part[f'{p}|{key}'] = m
             continue
         has = lambda c2: any(c2 in el.get(m, {}) for m in moulds)
@@ -86,6 +112,6 @@ for p, rb in pmap.items():
             if best is None or d < best[0]: best = (d, k2)
         if best: out_sub[f'{p}|{key}'] = best[1]
 
-json.dump({'source': 'Rebrickable catalog downloads', 'parts': pmap, 'colors': cmap, 'el': out_el, 'sub': out_sub, 'mould': out_part},
+json.dump({'source': 'Rebrickable catalog downloads', 'parts': pmap, 'colors': cmap, 'el': out_el, 'sub': out_sub, 'mould': out_part, 'old': sorted(out_old)},
           open(os.path.join(REPO, 'src/lego/elements.json'), 'w'), separators=(',', ':'), sort_keys=True)
-print('parts mapped %d/%d, colours %d/%d, elements %d, substitutions %d, unknown: %s' % (len(pmap), len(our_parts), len(cmap), len(our_colors), len(out_el), len(out_sub), problems))
+print('parts mapped %d/%d, colours %d/%d, elements %d (%d not in a set since %d), substitutions %d, unknown: %s' % (len(pmap), len(our_parts), len(cmap), len(our_colors), len(out_el), len(out_old), RECENT, len(out_sub), problems))

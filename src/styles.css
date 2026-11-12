@@ -1867,6 +1867,34 @@ a.chip {
 .order-swaps {
   margin: 10px 0 0;
 }
+.order-rest {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1.5px dashed #b8a24a;
+  border-radius: 10px;
+  line-height: 1.45;
+}
+.order-rest-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+.order-rest-row label {
+  cursor: pointer;
+}
+.order-paste {
+  flex: 1;
+  min-width: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+}
+.order-rest-msg {
+  margin: 8px 0 0;
+}
 .order-swaps summary {
   cursor: pointer;
   font-weight: 600;

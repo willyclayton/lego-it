@@ -138,12 +138,15 @@ export interface OrderList {
   /** pieces whose colour was never produced in that part and are ordered in the nearest colour */
   swapped: { part: string; from: string; to: string; count: number }[];
   missing: number;
+  /** order lines (and their pieces) whose element hasn't been in a LEGO set lately: probably not on Pick a Brick */
+  old: { lines: number; pieces: number };
 }
 interface ElementTable {
   parts: Record<string, string>;
   el: Record<string, string>;
   sub: Record<string, string>;
   mould: Record<string, string>;
+  old?: string[];
 }
 /** catalog numbers where BrickLink's own number differs from Rebrickable's */
 const BL_PART: Record<string, string> = { '6141': '4073' };
@@ -173,7 +176,15 @@ export function orderList(model: Model, t: ElementTable): OrderList {
     line.count += it.count;
     merged.set(id, line);
   }
-  return { lines: [...merged.values()], swapped: [...swapped.values()].sort((a, b) => b.count - a.count), missing };
+  const oldKeys = new Set(t.old ?? []);
+  const lines = [...merged.values()];
+  const stale = lines.filter((l) => oldKeys.has(`${l.part}|${l.color}`));
+  return {
+    lines,
+    swapped: [...swapped.values()].sort((a, b) => b.count - a.count),
+    missing,
+    old: { lines: stale.length, pieces: stale.reduce((n, l) => n + l.count, 0) },
+  };
 }
 
 /** BrickLink Wanted List XML (also imported by Brick Owl and Rebrickable), with real part numbers and colours. */
@@ -203,4 +214,11 @@ export function pickABrickCSV(o: OrderList, max = 999): string[] {
     }
   }
   return files.filter((f) => f.length).map((f) => ['elementId,quantity', ...f].join('\n') + '\n');
+}
+
+/** Keep only the lines whose element ids appear in `text` (e.g. Pick a Brick's list of pieces it couldn't add). */
+export function onlyElements(o: OrderList, text: string): OrderList {
+  const ids = new Set(text.match(/\b\d{6,8}\b/g) ?? []);
+  const lines = o.lines.filter((l) => l.element && ids.has(l.element));
+  return { ...o, lines, swapped: [], old: { lines: 0, pieces: 0 } };
 }

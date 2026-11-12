@@ -6,7 +6,7 @@ Turn anything into a brick model you can actually build, with:
 
 1. **Build animation** – the whole model assembles brick by brick in 3D: parts drop in and click into place, sub-assemblies are built on the side and flown in, and the camera follows the model as it grows. Scrub, change speed, step through, hover any brick to identify it, and record the build as a video.
 2. **Instructions that look like a real LEGO manual** – cover page, numbered steps with the rounded “parts needed” callout (`2x`), framed sub-assemblies with their own step numbers, attach arrows, “turn the model” icons, bag numbers, a finished-model page and the parts inventory at the back. Print it or save it as a PDF.
-3. **Piece overview** – every element with a render, count, part number and color, grouped by color or type. **Order the parts** sends the list to **LEGO Pick a Brick** (a CSV of element IDs, split into uploads of at most 999 pieces), **BrickLink** or **Brick Owl** (a Wanted List copied to the clipboard), opening each shop's import page. Part numbers and element IDs are matched against the Rebrickable catalog; pieces in a colour LEGO never made for that part are ordered in the closest colour that exists, and the page lists them. Exports: **LDraw `.ldr`** (with build steps; opens in BrickLink Studio, LeoCAD, LDView), a **BrickLink Wanted List XML** and **CSV**.
+3. **Piece overview** – every element with a render, count, part number and color, grouped by color or type. **Order the parts** sends the list to **LEGO Pick a Brick** (a CSV of element IDs, split into uploads of at most 999 pieces), **BrickLink** or **Brick Owl** (a Wanted List copied to the clipboard), opening each shop's import page. Part numbers and element IDs are matched against the Rebrickable catalog; pieces in a colour LEGO never made for that part are ordered in the closest colour that exists, and the page lists them. Each piece uses the element number that appears most in recent LEGO sets (the one Pick a Brick is most likely to sell); after a Pick a Brick upload, its list of pieces it couldn't add can be loaded back in and sent to BrickLink or Brick Owl. Exports: **LDraw `.ldr`** (with build steps; opens in BrickLink Studio, LeoCAD, LDView), a **BrickLink Wanted List XML** and **CSV**.
 4. **Build anything** – type an idea (“Millennium Falcon”, “a dragon”, “the Eiffel Tower”) and Claude designs it. Needs your own Claude API key (Settings ⚙). Without a key, prompts that match a sample open that sample.
 
 | Build animation | Instruction pages | Sub-assembly page |
@@ -80,7 +80,7 @@ python3 scripts/river/build_data.py data    # needs numpy and Pillow; writes pub
 
 ### Ordering data
 
-`src/lego/elements.json` maps every app part and colour to catalog part numbers and LEGO element IDs, and picks the substitute colours. Rebuild it from Rebrickable's free catalog downloads (`parts.csv`, `colors.csv`, `elements.csv` from https://rebrickable.com/downloads/):
+`src/lego/elements.json` maps every app part and colour to catalog part numbers and LEGO element IDs, and picks the substitute colours. Rebuild it from Rebrickable's free catalog downloads (`parts.csv`, `colors.csv`, `elements.csv`, and for picking the element LEGO still produces, `inventory_parts.csv`, `inventories.csv`, `sets.csv`, from https://rebrickable.com/downloads/):
 
 ```bash
 python3 scripts/parts/build_elements.py <folder with the unzipped csv files>
