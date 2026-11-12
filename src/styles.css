@@ -1816,26 +1816,46 @@ a.chip {
   padding: 14px 16px;
   margin: 0 0 16px;
 }
-.order-main {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 16px;
-  align-items: center;
-}
 .order h3 {
-  margin: 0;
+  margin: 0 0 4px;
   font-family: Outfit, Inter, sans-serif;
   font-size: 18px;
-  grid-column: 1;
 }
-.order-main p {
-  margin: 0;
-  grid-column: 1;
+.order-lead {
+  margin: 0 0 10px;
   line-height: 1.45;
 }
-.order-btn {
-  grid-column: 2;
-  grid-row: 1 / span 2;
+.order-shops {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.order-shop {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  padding: 9px 12px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.order-shop b {
+  font-size: 15px;
+}
+.order-shop span {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+.order-shop.on {
+  background: var(--yellow);
+}
+.order-shop:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.order-shop:disabled {
+  opacity: 0.55;
 }
 .order-steps {
   margin: 12px 0 0;
@@ -1844,22 +1864,29 @@ a.chip {
   gap: 4px;
   line-height: 1.45;
 }
+.order-swaps {
+  margin: 10px 0 0;
+}
+.order-swaps summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.order-swaps ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  columns: 2 320px;
+  font-size: 13px;
+}
 .order-note {
   margin: 10px 0 0;
   color: var(--muted);
   font-size: 12.5px;
 }
 @media (max-width: 760px) {
-  .order-main {
+  .order-shops {
     grid-template-columns: 1fr;
   }
-  .order-btn {
-    grid-column: 1;
-    grid-row: auto;
-    margin-top: 8px;
-  }
 }
-
 @media print {
   @page {
     size: 297mm 210mm;

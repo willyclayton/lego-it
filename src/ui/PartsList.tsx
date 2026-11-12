@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { color } from '../lego/colors';
-import { toBrickLinkXML, toCSV, toLDraw } from '../lego/export';
+import { loadElements, orderList, orderXML, pickABrickCSV, toBrickLinkXML, toCSV, toLDraw, type OrderList } from '../lego/export';
 import { inArtifact, saveFile } from '../host';
 import { colorsUsed, inventory, sortParts, type InvItem } from '../lego/inventory';
 import { part } from '../lego/parts';
@@ -8,6 +8,42 @@ import type { Model } from '../lego/types';
 import { partImage } from '../render/pageRenderer';
 
 type GroupBy = 'color' | 'type';
+type Shop = 'lego' | 'bricklink' | 'brickowl';
+
+const SHOPS: Record<Shop, { name: string; blurb: string; url: string; steps: (copied: boolean, files: number) => string[] }> = {
+  lego: {
+    name: 'LEGO Pick a Brick',
+    blurb: 'New parts straight from LEGO',
+    url: 'https://www.lego.com/pick-and-build/pick-a-brick',
+    steps: (_c, files) => [
+      files > 1
+        ? `The list was saved as ${files} files: Pick a Brick takes at most 999 pieces per upload.`
+        : 'The list was saved as a .csv file.',
+      'On the Pick a Brick page that opened, choose <b>Upload</b> (the upload-a-list button) and pick the file.',
+      'Pieces Pick a Brick doesn’t stock are left out of your bag; order those from BrickLink or Brick Owl.',
+    ],
+  },
+  bricklink: {
+    name: 'BrickLink',
+    blurb: 'Marketplace, new and used',
+    url: 'https://www.bricklink.com/v2/wanted/upload.page',
+    steps: (copied) => [
+      `${copied ? 'The list is copied.' : 'The list was saved as an .xml file.'} Sign in to BrickLink in the tab that opened.`,
+      `${copied ? 'Paste it into the box (Ctrl/⌘ + V)' : 'Open the saved file and paste its text into the box'}, then press <b>Proceed to verify items</b> and <b>Add to Wanted List</b>.`,
+      'Open the Wanted List and press <b>Buy All</b>; <b>Easy Buy</b> picks the fewest shops that have everything.',
+    ],
+  },
+  brickowl: {
+    name: 'Brick Owl',
+    blurb: 'Marketplace, new and used',
+    url: 'https://www.brickowl.com/wishlist',
+    steps: (copied) => [
+      `${copied ? 'The list is copied.' : 'The list was saved as an .xml file.'} Sign in to Brick Owl in the tab that opened.`,
+      `In <b>Wishlist</b>, choose <b>Import</b>, pick the <b>BrickLink XML</b> format and ${copied ? 'paste the list' : 'paste the file’s text'}.`,
+      'Set the condition to <b>New</b> if you want new parts (imports start as “any”), then use <b>Buy</b> on the wishlist to find stores.',
+    ],
+  },
+};
 
 export function PartsList({ model }: { model: Model }) {
   const [groupBy, setGroupBy] = useState<GroupBy>('color');
@@ -30,47 +66,81 @@ export function PartsList({ model }: { model: Model }) {
     setStatus(r === 'unavailable' ? 'Saving files isn’t available here.' : r === 'declined' ? null : inArtifact && /\.(ldr|xml)$/.test(name) ? `Saved ${name} inside a .zip.` : null);
   };
 
-  const [order, setOrder] = useState<null | 'copied' | 'saved'>(null);
-  /** Copy the Wanted List to the clipboard and open BrickLink's upload page next to it. */
-  const orderOnBrickLink = async () => {
-    const xml = toBrickLinkXML(model);
-    // open the tab inside the click so pop-up blockers allow it
-    window.open('https://www.bricklink.com/v2/wanted/upload.page', '_blank', 'noopener');
+  const [order, setOrder] = useState<OrderList | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void loadElements().then((t) => alive && setOrder(orderList(model, t)));
+    return () => {
+      alive = false;
+    };
+  }, [model]);
+  const [step, setStep] = useState<null | { shop: Shop; copied: boolean }>(null);
+  const pieces = model.bricks.length;
+
+  /** Open the shop's import page inside the click (so pop-up blockers allow it), then hand over the list. */
+  const go = async (shop: Shop) => {
+    if (!order) return;
+    window.open(SHOPS[shop].url, '_blank', 'noopener');
+    if (shop === 'lego') {
+      const files = pickABrickCSV(order);
+      for (let i = 0; i < files.length; i++) await saveFile(files.length > 1 ? `${slug}-pick-a-brick-${i + 1}.csv` : `${slug}-pick-a-brick.csv`, files[i]);
+      setStep({ shop, copied: false });
+      return;
+    }
+    const xml = orderXML(order);
     try {
       await navigator.clipboard.writeText(xml);
-      setOrder('copied');
+      setStep({ shop, copied: true });
     } catch {
-      await saveFile(`${slug}-bricklink.xml`, xml);
-      setOrder('saved');
+      await saveFile(`${slug}-wanted-list.xml`, xml);
+      setStep({ shop, copied: false });
     }
   };
-  const pieces = model.bricks.length;
+  const swappedCount = order ? order.swapped.reduce((n, x) => n + x.count, 0) : 0;
+  const pabFiles = order ? pickABrickCSV(order).length : 1;
 
   return (
     <div className="parts">
       <section className="order" aria-label="Order the parts">
-        <div className="order-main">
-          <h3>Order the parts</h3>
-          <p>
-            Buy all {pieces} pieces ({items.length} elements) from BrickLink sellers. One click copies the parts list and opens BrickLink’s Wanted List
-            upload; paste it there and BrickLink finds shops that have everything.
-          </p>
-          <button className="primary order-btn" onClick={orderOnBrickLink}>
-            Order on BrickLink ›
-          </button>
+        <h3>Order the parts</h3>
+        <p className="order-lead">
+          Every one of the {pieces} pieces ({items.length} elements), matched to real LEGO part and element numbers. Pick a shop: the list is handed
+          over and its import page opens in a new tab.
+        </p>
+        <div className="order-shops">
+          {(Object.keys(SHOPS) as Shop[]).map((k) => (
+            <button key={k} className={`order-shop ${step?.shop === k ? 'on' : ''}`} onClick={() => void go(k)} disabled={!order}>
+              <b>{SHOPS[k].name} ›</b>
+              <span>{SHOPS[k].blurb}</span>
+            </button>
+          ))}
         </div>
-        {order && (
+        {step && (
           <ol className="order-steps">
-            <li>{order === 'copied' ? 'The list is copied.' : 'The list was saved as an .xml file (copying wasn’t allowed here).'} Sign in to BrickLink in the tab that opened.</li>
-            <li>{order === 'copied' ? 'Paste into the box (Ctrl/⌘ + V)' : 'Choose the saved .xml file, or open it and paste its text into the box'}, then press <b>Proceed to verify items</b> and <b>Add to Wanted List</b>.</li>
-            <li>
-              Open the new Wanted List and press <b>Buy All</b>. <b>Easy Buy</b> picks the fewest shops that can fill the whole order.
-            </li>
+            {SHOPS[step.shop].steps(step.copied, pabFiles).map((t, i) => (
+              <li key={i} dangerouslySetInnerHTML={{ __html: t }} />
+            ))}
           </ol>
         )}
+        {order && swappedCount > 0 && (
+          <details className="order-swaps">
+            <summary>
+              {swappedCount} {swappedCount === 1 ? 'piece isn’t' : 'pieces aren’t'} made by LEGO in the model’s colour, so the order uses the closest colour
+              that exists
+            </summary>
+            <ul>
+              {order.swapped.map((x) => (
+                <li key={`${x.part}|${x.from}`}>
+                  {x.count}× {part(x.part).name}: <i className="swatch" style={{ background: color(x.from).hex }} /> {color(x.from).name} →{' '}
+                  <i className="swatch" style={{ background: color(x.to).hex }} /> {color(x.to).name}
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
         <p className="order-note">
-          LEGO’s own Pick a Brick can’t import a list, so its parts have to be added there one at a time; the CSV below has every part number and
-          color to search for. A few rare elements may only be available used.
+          Matched with the Rebrickable catalog. Availability and prices are up to each shop; Pick a Brick doesn’t stock every element, and the
+          marketplaces can fill the rest.
         </p>
       </section>
       <div className="parts-head">
@@ -96,7 +166,7 @@ export function PartsList({ model }: { model: Model }) {
           <button className="chip" onClick={() => save(`${slug}.ldr`, toLDraw(model))} title="LDraw model with build steps (opens in BrickLink Studio, LeoCAD, LDView…)">
             ⬇ LDraw .ldr
           </button>
-          <button className="chip" onClick={() => save(`${slug}-bricklink.xml`, toBrickLinkXML(model))} title="Upload as a BrickLink Wanted List">
+          <button className="chip" onClick={() => save(`${slug}-bricklink.xml`, order ? orderXML(order) : toBrickLinkXML(model))} title="Upload as a BrickLink Wanted List">
             ⬇ BrickLink XML
           </button>
           <button className="chip" onClick={() => save(`${slug}-parts.csv`, toCSV(model))}>

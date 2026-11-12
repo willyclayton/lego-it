@@ -122,3 +122,85 @@ export function toBrickLinkXML(model: Model): string {
     .join('\n');
   return `<INVENTORY>\n${items}\n</INVENTORY>\n`;
 }
+
+/* ---------------- ordering real parts ---------------- */
+
+export interface OrderLine {
+  part: string; // app part id
+  catalog: string; // catalog part number to order (Rebrickable numbering; BrickLink's for nearly all)
+  color: string; // colour key to order
+  wanted: string; // colour key in the model
+  element?: string; // LEGO element id (Pick a Brick)
+  count: number;
+}
+export interface OrderList {
+  lines: OrderLine[];
+  /** pieces whose colour was never produced in that part and are ordered in the nearest colour */
+  swapped: { part: string; from: string; to: string; count: number }[];
+  missing: number;
+}
+interface ElementTable {
+  parts: Record<string, string>;
+  el: Record<string, string>;
+  sub: Record<string, string>;
+  mould: Record<string, string>;
+}
+/** catalog numbers where BrickLink's own number differs from Rebrickable's */
+const BL_PART: Record<string, string> = { '6141': '4073' };
+
+let table: Promise<ElementTable> | null = null;
+export const loadElements = () => (table ??= import('./elements.json').then((m) => m.default as unknown as ElementTable));
+
+export function orderList(model: Model, t: ElementTable): OrderList {
+  const merged = new Map<string, OrderLine>();
+  const swapped = new Map<string, { part: string; from: string; to: string; count: number }>();
+  let missing = 0;
+  for (const it of inventory(model)) {
+    let key = it.color;
+    const sub = t.sub[`${it.part}|${key}`];
+    if (!t.el[`${it.part}|${key}`] && sub) {
+      const k = `${it.part}|${key}|${sub}`;
+      const s = swapped.get(k) ?? { part: it.part, from: key, to: sub, count: 0 };
+      s.count += it.count;
+      swapped.set(k, s);
+      key = sub;
+    }
+    const element = t.el[`${it.part}|${key}`];
+    if (!element) missing += it.count;
+    const catalog = t.mould[`${it.part}|${key}`] ?? t.parts[it.part] ?? it.part;
+    const id = `${catalog}|${key}`;
+    const line = merged.get(id) ?? { part: it.part, catalog, color: key, wanted: it.color, element, count: 0 };
+    line.count += it.count;
+    merged.set(id, line);
+  }
+  return { lines: [...merged.values()], swapped: [...swapped.values()].sort((a, b) => b.count - a.count), missing };
+}
+
+/** BrickLink Wanted List XML (also imported by Brick Owl and Rebrickable), with real part numbers and colours. */
+export function orderXML(o: OrderList): string {
+  const items = o.lines
+    .map((l) => `  <ITEM>\n    <ITEMTYPE>P</ITEMTYPE>\n    <ITEMID>${BL_PART[l.catalog] ?? l.catalog}</ITEMID>\n    <COLOR>${color(l.color).bricklink}</COLOR>\n    <MINQTY>${l.count}</MINQTY>\n  </ITEM>`)
+    .join('\n');
+  return `<INVENTORY>\n${items}\n</INVENTORY>\n`;
+}
+
+/** LEGO Pick a Brick upload files (elementId,quantity), split so no file has more than `max` pieces. */
+export function pickABrickCSV(o: OrderList, max = 999): string[] {
+  const files: string[][] = [[]];
+  let n = 0;
+  for (const l of o.lines) {
+    if (!l.element) continue;
+    let left = l.count;
+    while (left > 0) {
+      if (n >= max) {
+        files.push([]);
+        n = 0;
+      }
+      const take = Math.min(left, max - n);
+      files[files.length - 1].push(`${l.element},${take}`);
+      n += take;
+      left -= take;
+    }
+  }
+  return files.filter((f) => f.length).map((f) => ['elementId,quantity', ...f].join('\n') + '\n');
+}
